@@ -1,12 +1,11 @@
 <script setup lang="ts">
-//
+import CustNavBar from './components/CustNavBar.vue'
 </script>
 
 <template>
+  <cust-nav-bar></cust-nav-bar>
   <view class="index">
-    <uni-card>
-	<text>这是一个基础卡片示例，内容较少，此示例展示了一个没有任何属性不带阴影的卡片。</text>
-</uni-card>
+index
   </view>
 </template>
 
