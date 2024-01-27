@@ -16,6 +16,8 @@ const homeCategoryList = ref<CategoryItem[]>([])
 const hotList = ref<HotItem[]>([])
 //获取猜你喜欢组件实例
 const guessRef = ref<CxGuessInstance>()
+//下拉刷新动画是否开启 true开启,false关闭
+const isTriggered = ref(false)
 /* method */
 //获取首页轮播图数据
 const getHomeBannerData = async () => {
@@ -35,8 +37,17 @@ const getHomeHotData = async () => {
   hotList.value = res.result
 }
 //滚动触底时触发
-const onScrolltolower = () =>{
+const onScrolltolower = () => {
   guessRef.value?.getMore()
+}
+//自定义下拉刷新页面
+const onRefresherrefresh = async () => {
+  //开始动画
+  isTriggered.value=true
+  //加载数据  异步处理,优化时间等待,等all全部处理完结束动画
+  await Promise.all([getHomeBannerData(),getHomeCategoryData(),getHomeHotData()])
+  //结束动画
+  isTriggered.value=false
 }
 
 /* uniapp生命周期钩子 */
@@ -51,7 +62,14 @@ onLoad(() => {
   <!-- 自定义导航栏 -->
   <CustNavBar />
   <!-- 这里导入uniapp的滚动容器组件保证滚动范围 -->
-  <scroll-view scroll-y class="scroll_view" @scrolltolower="onScrolltolower">
+  <scroll-view
+    scroll-y
+    class="scroll_view"
+    @scrolltolower="onScrolltolower"
+    :refresher-triggered="isTriggered"
+    refresher-enabled
+    @refresherrefresh="onRefresherrefresh"
+  >
     <!-- 自定义轮播图 -->
     <CxSwiper :list="bannerList" />
     <!-- 分类面板 -->
@@ -60,7 +78,6 @@ onLoad(() => {
     <HotPanel :list="hotList" />
     <!-- 猜你喜欢 -->
     <CxGuess ref="guessRef" />
-
   </scroll-view>
 </template>
 
@@ -72,7 +89,7 @@ page {
   display: flex;
   flex-direction: column;
 }
-.scroll_view{
-  flex:1;
+.scroll_view {
+  flex: 1;
 }
 </style>
