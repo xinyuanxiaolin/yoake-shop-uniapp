@@ -1,5 +1,5 @@
 import type { GoodsItem } from './global'
-
+/* 首页接口对应的类型声明文件 */
 /** 首页-广告区域数据类型 */
 export type BannerItem = {
   /** 跳转链接 */
