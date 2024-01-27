@@ -7,3 +7,6 @@ declare module '@vue/runtime-core' {
     CxGuess: typeof CxGuess,
   }
 }
+
+//组件实例类型
+export type CxGuessInstance = InstanceType<typeof CxGuess>

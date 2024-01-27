@@ -6,6 +6,7 @@ import { ref } from 'vue'
 import CustNavBar from './components/CustNavBar.vue'
 import CategoryPenel from './components/CategoryPanel.vue'
 import HotPanel from './components/HotPanel.vue'
+import type { CxGuessInstance } from '@/components/components'
 /* data */
 //轮播图数据
 const bannerList = ref<BannerItem[]>([])
@@ -13,6 +14,8 @@ const bannerList = ref<BannerItem[]>([])
 const homeCategoryList = ref<CategoryItem[]>([])
 //热门推荐数据
 const hotList = ref<HotItem[]>([])
+//获取猜你喜欢组件实例
+const guessRef = ref<CxGuessInstance>()
 /* method */
 //获取首页轮播图数据
 const getHomeBannerData = async () => {
@@ -31,6 +34,10 @@ const getHomeHotData = async () => {
   // console.log(res);
   hotList.value = res.result
 }
+//滚动触底时触发
+const onScrolltolower = () =>{
+  guessRef.value?.getMore()
+}
 
 /* uniapp生命周期钩子 */
 onLoad(() => {
@@ -44,7 +51,7 @@ onLoad(() => {
   <!-- 自定义导航栏 -->
   <CustNavBar />
   <!-- 这里导入uniapp的滚动容器组件保证滚动范围 -->
-  <scroll-view scroll-y class="scroll_view">
+  <scroll-view scroll-y class="scroll_view" @scrolltolower="onScrolltolower">
     <!-- 自定义轮播图 -->
     <CxSwiper :list="bannerList" />
     <!-- 分类面板 -->
@@ -52,8 +59,8 @@ onLoad(() => {
     <!-- 热门推荐 -->
     <HotPanel :list="hotList" />
     <!-- 猜你喜欢 -->
-    <CxGuess />
-    
+    <CxGuess ref="guessRef" />
+
   </scroll-view>
 </template>
 
