@@ -53,6 +53,7 @@ onLoad(() => {
     <HotPanel :list="hotList" />
     <!-- 猜你喜欢 -->
     <CxGuess />
+    
   </scroll-view>
 </template>
 
