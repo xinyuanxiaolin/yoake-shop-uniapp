@@ -5,6 +5,7 @@ import { onLoad } from '@dcloudio/uni-app'
 import { ref } from 'vue'
 import CustNavBar from './components/CustNavBar.vue'
 import CategoryPenel from './components/CategoryPanel.vue'
+import PageSkeleton from './components/PageSkeleton.vue'
 import HotPanel from './components/HotPanel.vue'
 import type { CxGuessInstance } from '@/components/components'
 /* data */
@@ -18,6 +19,8 @@ const hotList = ref<HotItem[]>([])
 const guessRef = ref<CxGuessInstance>()
 //下拉刷新动画是否开启 true开启,false关闭
 const isTriggered = ref(false)
+//主页面加载中
+const isLoading = ref(false)
 /* method */
 //获取首页轮播图数据
 const getHomeBannerData = async () => {
@@ -43,46 +46,51 @@ const onScrolltolower = () => {
 //自定义下拉刷新页面
 const onRefresherrefresh = async () => {
   //开始动画
-  isTriggered.value=true
+  isTriggered.value = true
   //重置猜你喜欢数据
   guessRef.value?.resetData()
   //加载数据  异步处理,优化时间等待,等all全部处理完结束动画
-  await Promise.all([getHomeBannerData(),getHomeCategoryData(),getHomeHotData()])
+  await Promise.all([getHomeBannerData(), getHomeCategoryData(), getHomeHotData()])
   //调用获取猜你喜欢数据
   guessRef.value?.getMore()
   //结束动画
-  isTriggered.value=false
+  isTriggered.value = false
 }
 
 /* uniapp生命周期钩子 */
-onLoad(() => {
-  getHomeBannerData()
-  getHomeCategoryData()
-  getHomeHotData()
+//页面加载
+onLoad(async () => {
+  isLoading.value = true
+  await Promise.all([getHomeBannerData(), getHomeCategoryData(), getHomeHotData()])
+  isLoading.value = false
 })
 </script>
 
 <template>
   <!-- 自定义导航栏 -->
   <CustNavBar />
-  <!-- 这里导入uniapp的滚动容器组件保证滚动范围 -->
-  <scroll-view
-    scroll-y
-    class="scroll_view"
-    @scrolltolower="onScrolltolower"
-    :refresher-triggered="isTriggered"
-    refresher-enabled
-    @refresherrefresh="onRefresherrefresh"
-  >
-    <!-- 自定义轮播图 -->
-    <CxSwiper :list="bannerList" />
-    <!-- 分类面板 -->
-    <CategoryPenel :list="homeCategoryList" />
-    <!-- 热门推荐 -->
-    <HotPanel :list="hotList" />
-    <!-- 猜你喜欢 -->
-    <CxGuess ref="guessRef" />
-  </scroll-view>
+  <!-- 数据未加载完时,加载的骨架屏 -->
+  <PageSkeleton v-if="isLoading" />
+  <template v-else>
+    <!-- 这里导入uniapp的滚动容器组件保证滚动范围 -->
+    <scroll-view
+      scroll-y
+      class="scroll_view"
+      @scrolltolower="onScrolltolower"
+      :refresher-triggered="isTriggered"
+      refresher-enabled
+      @refresherrefresh="onRefresherrefresh"
+    >
+      <!-- 自定义轮播图 -->
+      <CxSwiper :list="bannerList" />
+      <!-- 分类面板 -->
+      <CategoryPenel :list="homeCategoryList" />
+      <!-- 热门推荐 -->
+      <HotPanel :list="hotList" />
+      <!-- 猜你喜欢 -->
+      <CxGuess ref="guessRef" />
+    </scroll-view>
+  </template>
 </template>
 
 <style lang="scss">
