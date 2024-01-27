@@ -44,8 +44,12 @@ const onScrolltolower = () => {
 const onRefresherrefresh = async () => {
   //开始动画
   isTriggered.value=true
+  //重置猜你喜欢数据
+  guessRef.value?.resetData()
   //加载数据  异步处理,优化时间等待,等all全部处理完结束动画
   await Promise.all([getHomeBannerData(),getHomeCategoryData(),getHomeHotData()])
+  //调用获取猜你喜欢数据
+  guessRef.value?.getMore()
   //结束动画
   isTriggered.value=false
 }
