@@ -9,7 +9,7 @@ const getData=async ()=>{
     method:"GET",
     url:""
   })
-  console.log(res.result)
+  // console.log(res.result)
 }
 </script>
 
