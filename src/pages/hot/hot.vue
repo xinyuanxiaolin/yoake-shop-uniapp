@@ -21,19 +21,48 @@ const currUrlMap = hotMap.find((v) => v.type === query.type)
 //推荐封面图
 const bannerPicture = ref('')
 //推荐选项
-const subTypes = ref<SubTypeItem[]>([])
+const subTypes = ref<(SubTypeItem & { finish?: boolean })[]>([])
 //下标索引
 const activeIndex = ref(0)
 
 /* method */
 //动态设置标题
 uni.setNavigationBarTitle({ title: currUrlMap!.title })
-//获取热门推荐数据
+//获取首次热门推荐数据
 const getHotRecommendData = async () => {
-  const res = await getHotRecommendApi(currUrlMap!.url)
+  const res = await getHotRecommendApi(currUrlMap!.url, { page: 1, pageSize: 10 })
   // console.log(res)
   bannerPicture.value = res.result.bannerPicture
   subTypes.value = res.result.subTypes
+}
+//分页刷新
+const onScrolltolower = async () => {
+  //当前选项卡
+  const currSubTypes = subTypes.value[activeIndex.value]
+  // console.log(currSubTypes)
+  if (currSubTypes.goodsItems.page < currSubTypes.goodsItems.pages) {
+    //触底时,当前选项卡对应的页码++
+    currSubTypes.goodsItems.page++
+  } else {
+    //自己给添加的对每一个标签的finish可以用做每一个选项卡的判断,不会导致公用一个finish导致值问题,
+    currSubTypes.finish = true
+    //退出并轻提示
+    return uni.showToast({
+      title: '已经到底了~',
+      icon: 'none',
+      mask: true,
+    })
+  }
+
+  //调用接口传参,此时getHotRecommendApi给定剩下的2个参数,后端返回对应选项卡的内容
+  const res = await getHotRecommendApi(currUrlMap!.url, {
+    subType: currSubTypes.id,
+    page: currSubTypes.goodsItems.page,
+    pageSize: currSubTypes.goodsItems.pageSize,
+  })
+  //拼接新的列表
+  const newsubTypes = res.result.subTypes[activeIndex.value]
+  currSubTypes.goodsItems.items.push(...newsubTypes.goodsItems.items)
 }
 
 //页面加载
@@ -60,7 +89,14 @@ onLoad(() => {
       >
     </view>
     <!-- 推荐列表 -->
-    <scroll-view v-for="(item,index) in subTypes" :key="item.id" v-show="activeIndex === index" scroll-y class="scroll-view">
+    <scroll-view
+      v-for="(item, index) in subTypes"
+      :key="item.id"
+      v-show="activeIndex === index"
+      scroll-y
+      class="scroll-view"
+      @scrolltolower="onScrolltolower"
+    >
       <view class="goods">
         <navigator
           hover-class="none"
@@ -69,18 +105,15 @@ onLoad(() => {
           :key="goods.id"
           :url="`/pages/goods/goods?id=${goods.id}`"
         >
-          <image
-            class="thumb"
-            :src="goods.picture"
-          ></image>
-          <view class="name ellipsis">{{goods.name}}</view>
+          <image class="thumb" :src="goods.picture"></image>
+          <view class="name ellipsis">{{ goods.name }}</view>
           <view class="price">
             <text class="symbol">¥</text>
-            <text class="number">{{goods.price}}</text>
+            <text class="number">{{ goods.price }}</text>
           </view>
         </navigator>
       </view>
-      <view class="loading-text">正在加载...</view>
+      <view class="loading-text" v-show="!item.finish">正在加载...</view>
     </scroll-view>
   </view>
 </template>
