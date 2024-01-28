@@ -1,22 +1,35 @@
 <script setup lang="ts">
-import { getHomeBannerApi } from '@/services/home';
-import type { BannerItem } from '@/types/home';
-import { onLoad } from '@dcloudio/uni-app';
-import { ref } from 'vue';
+import { getCategoryTopApi } from '@/services/category'
+import { getHomeBannerApi } from '@/services/home'
+import type { CategoryTopItem } from '@/types/category'
+import type { BannerItem } from '@/types/home'
+import { onLoad } from '@dcloudio/uni-app'
+import { ref } from 'vue'
 
 /* data */
+//轮播图
 const bannerList = ref<BannerItem[]>([])
-
+//高亮一级分类
+const activeIndex = ref(0)
+//分类数据
+const categoryList = ref<CategoryTopItem[]>([])
 /* method */
+
 //获取分类页轮播图数据
-const getHomeBannerData = async()=>{
+const getBannerData = async () => {
   const res = await getHomeBannerApi(2)
   bannerList.value = res.result
-
+}
+//获取分类列表数据
+const getCategoryTopData = async () => {
+  const res = await getCategoryTopApi()
+  // console.log(res);
+  categoryList.value = res.result
 }
 
-onLoad(()=>{
-  getHomeBannerData()
+onLoad(() => {
+  getBannerData()
+  getCategoryTopData()
 })
 </script>
 
@@ -32,8 +45,14 @@ onLoad(()=>{
     <view class="categories">
       <!-- 左侧：一级分类 -->
       <scroll-view class="primary" scroll-y>
-        <view v-for="(item, index) in 10" :key="item" class="item" :class="{ active: index === 0 }">
-          <text class="name"> 居家 </text>
+        <view
+          v-for="(item, index) in categoryList"
+          :key="item.id"
+          class="item"
+          :class="{ active: index === activeIndex }"
+          @tap ="activeIndex = index"
+        >
+          <text class="name"> {{ item.name }} </text>
         </view>
       </scroll-view>
       <!-- 右侧：二级分类 -->
