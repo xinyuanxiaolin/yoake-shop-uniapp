@@ -6,6 +6,7 @@ import type { BannerItem } from '@/types/home'
 import { onLoad } from '@dcloudio/uni-app'
 import { computed } from 'vue'
 import { ref } from 'vue'
+import PageSkeleton from './components/PageSkeleton.vue'
 
 /* data */
 //轮播图
@@ -14,6 +15,8 @@ const bannerList = ref<BannerItem[]>([])
 const activeIndex = ref(0)
 //分类数据
 const categoryList = ref<CategoryTopItem[]>([])
+//页面加载中
+const isLoading = ref(false)
 /* method */
 
 //获取分类页轮播图数据
@@ -32,14 +35,18 @@ const secCategoryList =  computed(()=>{
   return categoryList.value[activeIndex.value]?.children ||[]
 })
 
-onLoad(() => {
-  getBannerData()
-  getCategoryTopData()
+//页面加载
+onLoad(async() => {
+  isLoading.value = true
+  await Promise.all([getBannerData(),getCategoryTopData()])
+  isLoading.value = false
 })
 </script>
 
 <template>
-  <view class="viewport">
+    <!-- 数据未加载完时,加载的骨架屏 -->
+  <PageSkeleton v-if="isLoading" />
+  <view class="viewport" v-else>
     <!-- 搜索框 -->
     <view class="search">
       <view class="input">
