@@ -45,7 +45,6 @@
 				"navigationBarTitleText": "分类"
 			}
 		},
-
 		{
 			"path": "pages/hot/hot",
 			"style": {
@@ -97,5 +96,26 @@
 				"selectedIconPath": "static/tabs/user_selected.png"
 			}
 		]
+	},
+	//分包加载配置:将小程序的代码分割成多个部分，分别打包成多个小程序包，减少小程序的加载时间，提高用户体验。
+	"subPackages": [
+		{
+			"root": "pagesMember",
+			"pages": [
+				{
+					"path": "settings/settings",
+					"style": {
+						"navigationBarTitleText": "设置"
+					}
+				}
+			]
+		}
+	],
+	//分包预下载规则
+	"preloadRule": {
+		"pages/my/my":{
+			"network": "all",
+			"packages": ["pagesMember"]
+		}
 	}
 }

@@ -7,7 +7,7 @@
 2.单页分页加载和多标签页分页加载
 3.ts的严格规范书写
 4.加载是骨架屏的实现
-
+5.封装组合式函数在composables中方便复用
 ### 技术栈
 
 - 前端框架：[uni-app](https://uniapp.dcloud.net.cn/) (Vue3 + TS + Setup)
