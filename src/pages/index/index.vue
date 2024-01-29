@@ -7,7 +7,7 @@ import CustNavBar from './components/CustNavBar.vue'
 import CategoryPenel from './components/CategoryPanel.vue'
 import PageSkeleton from './components/PageSkeleton.vue'
 import HotPanel from './components/HotPanel.vue'
-import type { CxGuessInstance } from '@/components/components'
+import { useGuessList } from '@/composables'
 /* data */
 //轮播图数据
 const bannerList = ref<BannerItem[]>([])
@@ -15,8 +15,6 @@ const bannerList = ref<BannerItem[]>([])
 const homeCategoryList = ref<CategoryItem[]>([])
 //热门推荐数据
 const hotList = ref<HotItem[]>([])
-//获取猜你喜欢组件实例
-const guessRef = ref<CxGuessInstance>()
 //下拉刷新动画是否开启 true开启,false关闭
 const isTriggered = ref(false)
 //主页面加载中
@@ -39,10 +37,10 @@ const getHomeHotData = async () => {
   // console.log(res);
   hotList.value = res.result
 }
-//滚动触底时触发
-const onScrolltolower = () => {
-  guessRef.value?.getMore()
-}
+
+//猜你喜欢组合式函数调用(位于composables文件夹中)
+const {guessRef,onScrolltolower}=useGuessList()
+
 //自定义下拉刷新页面
 const onRefresherrefresh = async () => {
   //开始动画

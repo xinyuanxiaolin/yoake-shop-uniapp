@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { useMemberStore } from '@/stores';
+import { useGuessList } from '@/composables'
+import { useMemberStore } from '@/stores'
 
 // 获取屏幕边界到安全区域距离
 const { safeAreaInsets } = uni.getSystemInfoSync()
@@ -12,23 +13,24 @@ const orderTypes = [
 ]
 //获取会员信息
 const memberStore = useMemberStore()
+
+//猜你喜欢组合式函数调用(位于composables文件夹中)
+const { guessRef, onScrolltolower } = useGuessList()
 </script>
 
 <template>
-  <scroll-view class="viewport" scroll-y enable-back-to-top>
+  <scroll-view @scrolltolower="onScrolltolower" class="viewport" scroll-y enable-back-to-top>
     <!-- 个人资料 -->
     <view class="profile" :style="{ paddingTop: safeAreaInsets!.top + 'px' }">
       <!-- 情况1：已登录 -->
       <view class="overview" v-if="memberStore.profile">
         <navigator url="/pagesMember/profile/profile" hover-class="none">
-          <image
-            class="avatar"
-            mode="aspectFill"
-            :src="memberStore.profile.avatar"
-          ></image>
+          <image class="avatar" mode="aspectFill" :src="memberStore.profile.avatar"></image>
         </navigator>
         <view class="meta">
-          <view class="nickname"> {{memberStore.profile.nickname || memberStore.profile.account}} </view>
+          <view class="nickname">
+            {{ memberStore.profile.nickname || memberStore.profile.account }}
+          </view>
           <navigator class="extra" url="/pagesMember/profile/profile" hover-class="none">
             <text class="update">更新头像昵称</text>
           </navigator>
@@ -82,7 +84,7 @@ const memberStore = useMemberStore()
     </view>
     <!-- 猜你喜欢 -->
     <view class="guess">
-      <XtxGuess ref="guessRef" />
+      <CxGuess ref="guessRef" />
     </view>
   </scroll-view>
 </template>
