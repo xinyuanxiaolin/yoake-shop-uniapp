@@ -8,6 +8,7 @@
 3.ts的严格规范书写
 4.加载是骨架屏的实现
 5.封装组合式函数在composables中方便复用
+6.在会员中心设置实现了分包和预下载(pagesMember中放着分包)
 ### 技术栈
 
 - 前端框架：[uni-app](https://uniapp.dcloud.net.cn/) (Vue3 + TS + Setup)
