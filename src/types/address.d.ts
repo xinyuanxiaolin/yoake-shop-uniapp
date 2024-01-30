@@ -1,5 +1,6 @@
 /* 收货地址类型声明 */
 
+/**添加收货地址 */
 export type AddressParams = {
     /**收货人姓名 */
     receiver:string
@@ -16,3 +17,12 @@ export type AddressParams = {
     /**是否设置为默认地址（数值类型） 1是 0否 */
     isDefault:number
 }
+
+/** 收货地址项 */
+export type AddressItem =AddressParams &{
+
+    /** 收货地址 id */
+    id: string
+    /** 省市区 */
+    fullLocation: string
+  }

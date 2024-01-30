@@ -1,5 +1,24 @@
 <script setup lang="ts">
-//
+import { addressListApi } from '@/services/adress';
+import type { AddressItem } from '@/types/address';
+import {onShow } from '@dcloudio/uni-app';
+import { ref } from 'vue';
+//收货地址
+const addressList =ref<AddressItem[]>([])
+
+//获取收货地址列表
+const getAddressListData = async () =>{
+  const res = await addressListApi()
+  addressList.value = res.result
+  // console.log(res.result)
+  
+}
+
+//监听页面显示，页面每次出现在屏幕上都触发，包括从下级页面点返回露出当前页面
+//(使用onLoad并不能展示最新的列表,其实就是没有再次调用接口)
+onShow(()=>{
+  getAddressListData()
+})
 </script>
 
 <template>
@@ -9,36 +28,18 @@
       <view v-if="true" class="address">
         <view class="address-list">
           <!-- 收货地址项 -->
-          <view class="item">
+          <view class="item" v-for="item in addressList" :key="item.id">
             <view class="item-content">
               <view class="user">
-                黑马小王子
-                <text class="contact">13111111111</text>
-                <text v-if="true" class="badge">默认</text>
+                {{item.receiver}}
+                <text class="contact">{{item.contact}}</text>
+                <text v-if="item.isDefault" class="badge">默认</text>
               </view>
-              <view class="locate">广东省 广州市 天河区 黑马程序员</view>
+              <view class="locate">{{item.fullLocation+" "+item.address}}</view>
               <navigator
                 class="edit"
                 hover-class="none"
-                :url="`/pagesMember/address-form/address-form?id=1`"
-              >
-                修改
-              </navigator>
-            </view>
-          </view>
-          <!-- 收货地址项 -->
-          <view class="item">
-            <view class="item-content">
-              <view class="user">
-                黑马小公主
-                <text class="contact">13222222222</text>
-                <text v-if="false" class="badge">默认</text>
-              </view>
-              <view class="locate">北京市 北京市 顺义区 黑马程序员</view>
-              <navigator
-                class="edit"
-                hover-class="none"
-                :url="`/pagesMember/address-form/address-form?id=2`"
+                :url="`/pagesMember/address-form/address-form?id=${item.id}`"
               >
                 修改
               </navigator>
