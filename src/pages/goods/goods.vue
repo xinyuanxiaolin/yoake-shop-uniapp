@@ -1,11 +1,12 @@
 <script setup lang="ts">
 import { getGoodsByIdAPI } from '@/services/goods'
 import type { GoodsResult } from '@/types/goods'
-import type { SkuPopupLocaldata } from '@/components/vk-data-goods-sku-popup/vk-data-goods-sku-popup'
+import type { SkuPopupInstanceType, SkuPopupLocaldata } from '@/components/vk-data-goods-sku-popup/vk-data-goods-sku-popup'
 import { onLoad } from '@dcloudio/uni-app'
 import { ref } from 'vue'
 import ServicePanel from './components/ServicePanel.vue'
 import AddressPanel from './components/AddressPanel.vue'
+import { computed } from 'vue'
 
 // #region
 /* data */
@@ -34,16 +35,20 @@ const localdata = ref({} as SkuPopupLocaldata)
 //SKU模块按钮模式 (选择或者加入购物车或者直接购买的那个弹出框对应样式)
 enum SkuMode {
   /** Both:都显示 */
-  Both=1,
+  Both = 1,
   /**Cart:只显示购物车  */
-  Cart=2,
+  Cart = 2,
   /**Buy:只显示立即购买  */
-  Buy=3
+  Buy = 3,
 }
 const mode = ref<SkuMode>(SkuMode.Both)
-
+//Sku组件实例
+const skuPopupRef = ref<SkuPopupInstanceType>()
+//计算被选择的值
+const selectArrText = computed(()=>{
+  return skuPopupRef.value?.selectArr?.join(' ').trim() || '请选择商品规格'
+})
 //#endregion
-
 
 //#region
 /* method */
@@ -69,10 +74,9 @@ const getGoodsByIdData = async () => {
         goods_id: res.result.id,
         goods_name: res.result.name,
         image: v.picture,
-        price: v.price*100,
+        price: v.price * 100,
         stock: v.inventory,
-        sku_name_arr: v.specs.map((va) => 
-          va.valueName),
+        sku_name_arr: v.specs.map((va) => va.valueName),
       }
     }),
   }
@@ -96,13 +100,12 @@ const openPopup = (name: typeof popupName.value) => {
 }
 
 //打开SKU弹框修改按钮的模式
-const openSkuPopup =(v:SkuMode)=>{
+const openSkuPopup = (v: SkuMode) => {
   //显示SKU组件
   isShowSku.value = true
   //修改按钮为对应触发的样式
-  mode.value =v
+  mode.value = v
 }
-
 
 onLoad(() => {
   getGoodsByIdData()
@@ -113,7 +116,19 @@ onLoad(() => {
 
 <template>
   <!-- SKU弹窗第三方组件 -->
-  <vk-data-goods-sku-popup v-model="isShowSku" :localdata="localdata" :mode="mode" add-cart-background-color="#FFA868" buy-now-background-color="#27BA9B"></vk-data-goods-sku-popup>
+  <vk-data-goods-sku-popup
+    v-model="isShowSku"
+    :localdata="localdata"
+    :mode="mode"
+    add-cart-background-color="#FFA868"
+    buy-now-background-color="#27BA9B"
+    ref="skuPopupRef"
+    :actived-style="{
+      color:'#27BA9B',
+      borderColor:'#27BA9B',
+      backgroundColor:'#E9F8F5'
+    }"
+  ></vk-data-goods-sku-popup>
   <scroll-view scroll-y class="viewport">
     <!-- 基本信息 -->
     <view class="goods">
@@ -145,7 +160,7 @@ onLoad(() => {
       <view class="action">
         <view class="item arrow" @tap="openSkuPopup(SkuMode.Both)">
           <text class="label">选择</text>
-          <text class="text ellipsis"> 请选择商品规格 </text>
+          <text class="text ellipsis"> {{selectArrText}} </text>
         </view>
         <view class="item arrow" @tap="openPopup('address')">
           <text class="label">送至</text>
