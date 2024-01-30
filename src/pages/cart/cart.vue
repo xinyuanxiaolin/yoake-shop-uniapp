@@ -1,9 +1,10 @@
 <script setup lang="ts">
 import type { InputNumberBoxEvent } from '@/components/vk-data-input-number-box/vk-data-input-number-box'
-import { deleteMemberCartApi, getMemberCartAPI, putMemberCartBySkuIdApi } from '@/services/cart'
+import { deleteMemberCartApi, getMemberCartAPI, putMemberCartBySkuIdApi, putMemberCartSelectApi } from '@/services/cart'
 import { useMemberStore } from '@/stores'
 import type { CartItem } from '@/types/cart'
 import { onShow } from '@dcloudio/uni-app'
+import { computed } from 'vue'
 import { ref } from 'vue'
 
 //获取会员store
@@ -34,7 +35,30 @@ const onChangeCount = async (ev: InputNumberBoxEvent) => {
   console.log(ev)
   await putMemberCartBySkuIdApi(ev.index,{count:ev.value})
 }
-
+//修改选中状态-单品选中
+const onChangeSelect = (item:CartItem)=>{
+  //前端数据更新(利用了响应式)
+  item.selected = !item.selected
+  //后端数据更新
+  putMemberCartBySkuIdApi(item.skuId,{selected:item.selected})
+}
+//全选值计算
+const isSelectAll = computed(()=>{
+  //every() 方法测试一个数组内的所有元素是否都能通过指定函数的测试。它返回一个布尔值。
+  //但是every空数组会返回true,所以再来一个长度校验
+  return cartList.value.length && cartList.value.every(v=>v.selected===true)
+})
+//当点击全选时
+const onChangeSelectAll =   ()=>{
+  //前端全选状态取反
+  const _isSelectAll = !isSelectAll.value
+  //前端数据更新
+  cartList.value.forEach(item => {
+      item.selected = _isSelectAll
+  });
+  //后端数据更新
+   putMemberCartSelectApi({selected:_isSelectAll})
+}
 //初始化调用
 onShow(() => {
   if (memberStore.profile) {
@@ -61,7 +85,7 @@ onShow(() => {
             <!-- 商品信息 -->
             <view class="goods">
               <!-- 选中状态 -->
-              <text class="checkbox" :class="{ checked: item.selected }"></text>
+              <text @tap="onChangeSelect(item)" class="checkbox" :class="{ checked: item.selected }"></text>
               <navigator
                 :url="`/pages/goods/goods?id=${item.id}`"
                 hover-class="none"
@@ -105,7 +129,7 @@ onShow(() => {
       </view>
       <!-- 吸底工具栏 -->
       <view class="toolbar">
-        <text class="all" :class="{ checked: true }">全选</text>
+        <text @tap="onChangeSelectAll" class="all" :class="{ checked: isSelectAll }">全选</text>
         <text class="text">合计:</text>
         <text class="amount">100</text>
         <view class="button-grounp">

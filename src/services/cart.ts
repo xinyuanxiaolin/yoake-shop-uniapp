@@ -52,3 +52,16 @@ export const putMemberCartBySkuIdApi = (skuId:string,data:{selected?:boolean,cou
   })
 }
   
+
+/**
+ * 购物车全选/取消全选
+ * @param data selected 是否选择
+ * @returns 
+ */
+export const putMemberCartSelectApi = (data:{selected:boolean})=>{
+  return http({
+    method:'PUT',
+    url:'/member/cart/selected',
+    data,
+  })
+}
