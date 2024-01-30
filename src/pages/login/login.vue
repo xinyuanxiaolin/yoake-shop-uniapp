@@ -32,7 +32,9 @@ const onGetPhoneNumberSimple = async () => {
   })
   setTimeout(() => {
     //页面跳转,位于tab页时跳转用switchTab
-    uni.switchTab({ url: '/pages/my/my' })
+    // uni.switchTab({ url: '/pages/my/my' })
+    //优化用户体验
+    uni.navigateBack()
   }, 500)
 }
 </script>
