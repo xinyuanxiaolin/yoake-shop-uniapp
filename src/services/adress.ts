@@ -51,3 +51,11 @@ export const putAddressByIdApi = (id:string,data:AddressParams)=>{
         data,
     })
 }
+
+
+export const deleteAddressByIdApi = (id:string) =>{
+    return http({
+        method:'DELETE',
+        url:`/member/address/${id}`
+    })
+}

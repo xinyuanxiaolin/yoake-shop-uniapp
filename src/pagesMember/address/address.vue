@@ -1,22 +1,36 @@
 <script setup lang="ts">
-import { addressListApi } from '@/services/adress';
-import type { AddressItem } from '@/types/address';
-import {onShow } from '@dcloudio/uni-app';
-import { ref } from 'vue';
+import { addressListApi, deleteAddressByIdApi } from '@/services/adress'
+import type { AddressItem } from '@/types/address'
+import { onShow } from '@dcloudio/uni-app'
+import { ref } from 'vue'
 //收货地址
-const addressList =ref<AddressItem[]>([])
+const addressList = ref<AddressItem[]>([])
 
 //获取收货地址列表
-const getAddressListData = async () =>{
+const getAddressListData = async () => {
   const res = await addressListApi()
   addressList.value = res.result
   // console.log(res.result)
-  
+}
+//删除收货地址
+const onDeleteAddress = (id: string) => {
+  uni.showModal({
+    title: '删除地址',
+    content: '确认删除地址?',
+    success: async (result) => {
+      if (result.confirm) {
+        //发送删除请求
+        await deleteAddressByIdApi(id)
+        //重新获取数据
+        getAddressListData()
+      }
+    },
+  })
 }
 
 //监听页面显示，页面每次出现在屏幕上都触发，包括从下级页面点返回露出当前页面
 //(使用onLoad并不能展示最新的列表,其实就是没有再次调用接口)
-onShow(()=>{
+onShow(() => {
   getAddressListData()
 })
 </script>
@@ -25,17 +39,17 @@ onShow(()=>{
   <view class="viewport">
     <!-- 地址列表 -->
     <scroll-view class="scroll-view" scroll-y>
-      <view v-if="true" class="address">
-        <view class="address-list">
+      <view v-if="addressList.length" class="address">
+        <uni-swipe-action class="address-list">
           <!-- 收货地址项 -->
-          <view class="item" v-for="item in addressList" :key="item.id">
+          <uni-swipe-action-item class="item" v-for="item in addressList" :key="item.id">
             <view class="item-content">
               <view class="user">
-                {{item.receiver}}
-                <text class="contact">{{item.contact}}</text>
+                {{ item.receiver }}
+                <text class="contact">{{ item.contact }}</text>
                 <text v-if="item.isDefault" class="badge">默认</text>
               </view>
-              <view class="locate">{{item.fullLocation+" "+item.address}}</view>
+              <view class="locate">{{ item.fullLocation + ' ' + item.address }}</view>
               <navigator
                 class="edit"
                 hover-class="none"
@@ -44,8 +58,11 @@ onShow(()=>{
                 修改
               </navigator>
             </view>
-          </view>
-        </view>
+            <template #right>
+              <button class="delete-button" @tap="onDeleteAddress(item.id)">删除</button>
+            </template>
+          </uni-swipe-action-item>
+        </uni-swipe-action>
       </view>
       <view v-else class="blank">暂无收货地址</view>
     </scroll-view>
