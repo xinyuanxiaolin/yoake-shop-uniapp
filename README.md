@@ -9,6 +9,7 @@
 4.加载是骨架屏的实现
 5.封装组合式函数在composables中方便复用
 6.在会员中心设置实现了分包和预下载(pagesMember中放着分包)
+7.SKU模块的使用,以及SKU算法的理解 (SKU概念:存货单位(Stock Keeping Unit)，库存管理的最小可用单元，通常称为“单品”)
 ### 技术栈
 
 - 前端框架：[uni-app](https://uniapp.dcloud.net.cn/) (Vue3 + TS + Setup)
