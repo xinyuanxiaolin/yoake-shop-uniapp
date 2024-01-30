@@ -1,23 +1,43 @@
 <script setup lang="ts">
-import { getMemberCartAPI } from '@/services/cart';
-import { useMemberStore } from '@/stores';
-import type { CartItem } from '@/types/cart';
-import { onShow } from '@dcloudio/uni-app';
-import { ref } from 'vue';
+import type { InputNumberBoxEvent } from '@/components/vk-data-input-number-box/vk-data-input-number-box'
+import { deleteMemberCartApi, getMemberCartAPI, putMemberCartBySkuIdApi } from '@/services/cart'
+import { useMemberStore } from '@/stores'
+import type { CartItem } from '@/types/cart'
+import { onShow } from '@dcloudio/uni-app'
+import { ref } from 'vue'
 
 //获取会员store
 const memberStore = useMemberStore()
 //购物车列表数据
 const cartList = ref<CartItem[]>([])
 //获取购物车数据
-const getMemberCartData = async ()=>{
-  const res =await getMemberCartAPI()
+const getMemberCartData = async () => {
+  const res = await getMemberCartAPI()
   cartList.value = res.result
+}
+//删除单个对应的购物车数据
+const onDeleteCart = (skuId: string) => {
+  //弹窗确认
+  uni.showModal({
+    content: '是否删除',
+    success: async (success) => {
+      if (success.confirm) {
+        await deleteMemberCartApi({ ids: [skuId] })
+        //重新获取列表
+        getMemberCartData()
+      }
+    },
+  })
+}
+//修改商品数量时
+const onChangeCount = async (ev: InputNumberBoxEvent) => {
+  console.log(ev)
+  await putMemberCartBySkuIdApi(ev.index,{count:ev.value})
 }
 
 //初始化调用
-onShow(()=>{
-  if(memberStore.profile){
+onShow(() => {
+  if (memberStore.profile) {
     getMemberCartData()
   }
 })
@@ -47,28 +67,29 @@ onShow(()=>{
                 hover-class="none"
                 class="navigator"
               >
-                <image
-                  mode="aspectFill"
-                  class="picture"
-                  :src="item.picture"
-                ></image>
+                <image mode="aspectFill" class="picture" :src="item.picture"></image>
                 <view class="meta">
-                  <view class="name ellipsis">{{item.name}}</view>
-                  <view class="attrsText ellipsis">{{item.attrsText}}</view>
-                  <view class="price">{{item.nowPrice}}</view>
+                  <view class="name ellipsis">{{ item.name }}</view>
+                  <view class="attrsText ellipsis">{{ item.attrsText }}</view>
+                  <view class="price">{{ item.nowPrice }}</view>
                 </view>
               </navigator>
               <!-- 商品数量 -->
               <view class="count">
-                <text class="text">-</text>
-                <input class="input" type="number" :value="item.count.toString()" />
-                <text class="text">+</text>
+                <!-- 第三方步进器使用 -->
+                <vk-data-input-number-box
+                  v-model="item.count"
+                  :min="1"
+                  :max="item.stock"
+                  :index="item.skuId"
+                  @change="onChangeCount"
+                />
               </view>
             </view>
             <!-- 右侧删除按钮 -->
             <template #right>
               <view class="cart-swipe-right">
-                <button class="button delete-button">删除</button>
+                <button class="button delete-button" @tap="onDeleteCart(item.skuId)">删除</button>
               </view>
             </template>
           </uni-swipe-action-item>
