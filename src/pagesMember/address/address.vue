@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { addressListApi, deleteAddressByIdApi } from '@/services/adress'
+import { addressListApi, deleteAddressByIdApi } from '@/services/address'
 import type { AddressItem } from '@/types/address'
 import { onShow } from '@dcloudio/uni-app'
 import { ref } from 'vue'
@@ -179,3 +179,4 @@ page {
   background-color: #27ba9b;
 }
 </style>
+@/services/address

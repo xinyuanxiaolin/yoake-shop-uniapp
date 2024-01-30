@@ -1,12 +1,13 @@
 <script setup lang="ts">
 import { getGoodsByIdAPI } from '@/services/goods'
 import type { GoodsResult } from '@/types/goods'
-import type { SkuPopupInstanceType, SkuPopupLocaldata } from '@/components/vk-data-goods-sku-popup/vk-data-goods-sku-popup'
+import type { SkuPopupEvent, SkuPopupInstanceType, SkuPopupLocaldata } from '@/components/vk-data-goods-sku-popup/vk-data-goods-sku-popup'
 import { onLoad } from '@dcloudio/uni-app'
 import { ref } from 'vue'
 import ServicePanel from './components/ServicePanel.vue'
 import AddressPanel from './components/AddressPanel.vue'
 import { computed } from 'vue'
+import { postMemberCartAPI } from '@/services/cart'
 
 // #region
 /* data */
@@ -106,6 +107,12 @@ const openSkuPopup = (v: SkuMode) => {
   //修改按钮为对应触发的样式
   mode.value = v
 }
+//加入购物车
+const onAddCart = async (ev:SkuPopupEvent)=>{
+  await postMemberCartAPI({skuId:ev._id,count:ev.buy_num})
+  uni.showToast({icon:'none',title:'添加成功'})
+  isShowSku.value = false
+}
 
 onLoad(() => {
   getGoodsByIdData()
@@ -128,6 +135,7 @@ onLoad(() => {
       borderColor:'#27BA9B',
       backgroundColor:'#E9F8F5'
     }"
+    @add-cart="onAddCart"
   ></vk-data-goods-sku-popup>
   <scroll-view scroll-y class="viewport">
     <!-- 基本信息 -->

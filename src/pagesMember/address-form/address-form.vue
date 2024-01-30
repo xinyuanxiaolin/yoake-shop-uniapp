@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { addAddressApi, addressListDetailApi, putAddressByIdApi } from '@/services/adress'
+import { addAddressApi, addressListDetailApi, putAddressByIdApi } from '@/services/address'
 import { onLoad } from '@dcloudio/uni-app'
 import { ref } from 'vue'
 
@@ -120,7 +120,7 @@ onLoad(() => {
       <uni-forms-item name="address" class="form-item">
         <text class="label">详细地址</text>
         <input class="input" placeholder="街道、楼牌号等信息" v-model="form.address" />
-      </uni-forms-item >
+      </uni-forms-item>
       <view class="form-item">
         <label class="label">设为默认地址</label>
         <switch
@@ -208,3 +208,4 @@ page {
   background-color: #27ba9b;
 }
 </style>
+@/services/address
