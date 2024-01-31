@@ -1,5 +1,6 @@
 /* 支付相关接口 */
 
+import type { OrderResult } from "@/types/order"
 import { http } from "@/utils/http"
 
 /**
