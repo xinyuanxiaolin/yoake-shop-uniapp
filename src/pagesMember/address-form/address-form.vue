@@ -53,6 +53,8 @@ const onSwitchChange: UniHelper.SwitchOnChange = (ev) => {
   // console.log(ev.detail.value)
   if (ev.detail.value) {
     form.value.isDefault = 1
+  } else{
+    form.value.isDefault = 0
   }
 }
 //提交表单
