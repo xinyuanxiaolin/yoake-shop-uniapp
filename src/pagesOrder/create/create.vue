@@ -1,8 +1,8 @@
 <script setup lang="ts">
-import { getMemberOrderPreApi } from '@/services/order';
-import { useAddressStore } from '@/stores/modules/address';
-import type { OrderPreResult } from '@/types/order';
-import { onLoad } from '@dcloudio/uni-app';
+import { getMemberOrderPreApi, getMemberOrderPreNowApi } from '@/services/order'
+import { useAddressStore } from '@/stores/modules/address'
+import type { OrderPreResult } from '@/types/order'
+import { onLoad } from '@dcloudio/uni-app'
 import { computed, ref } from 'vue'
 
 // 获取屏幕边界到安全区域距离
@@ -23,28 +23,39 @@ const activeDelivery = computed(() => deliveryList.value[activeIndex.value])
 const onChangeDelivery: UniHelper.SelectorPickerOnChange = (ev) => {
   activeIndex.value = ev.detail.value
 }
+//获取直接购买时的页面参数信息
+const query = defineProps<{
+  skuId?: string
+  count?: string
+  addressId?:string
+}>()
 //订单信息
 const orederPre = ref<OrderPreResult>()
 //获取订单信息
-const getMemberOrderPreData = async ()=>{
-  const res =  await getMemberOrderPreApi()
-  // console.log(res);
-  orederPre.value  = res.result
-  
+const getMemberOrderPreData = async () => {
+  //先判断下是不是从直接购买跳转而来
+  if (query.count && query.skuId) {
+    //为直接购买,调用直接购买接口
+    const res = await getMemberOrderPreNowApi({ skuId: query.skuId, count: query.count,addressId:query.addressId })
+    orederPre.value = res.result
+  } else {
+    //为购物车预付购买,调用预付订单接口
+    const res = await getMemberOrderPreApi()
+    // console.log(res);
+    orederPre.value = res.result
+  }
 }
 //获取收货地址store
-const addressStore =useAddressStore()
+const addressStore = useAddressStore()
 
 //收货地址
-const selectAddress = computed(()=>{
+const selectAddress = computed(() => {
   //store里面用户设置为啥或者选择啥时优先考虑,没有设置就以默认的来渲染
-  return addressStore.selectedAddress || orederPre.value?.userAddresses.find(v=>v.isDefault)
+  return addressStore.selectedAddress || orederPre.value?.userAddresses.find((v) => v.isDefault)
 })
 
-
-
 //页面加载
-onLoad(()=>{
+onLoad(() => {
   getMemberOrderPreData()
 })
 </script>
@@ -58,8 +69,8 @@ onLoad(()=>{
       hover-class="none"
       url="/pagesMember/address/address?from=order"
     >
-      <view class="user"> {{selectAddress.receiver}} </view>
-      <view class="address"> {{selectAddress.fullLocation+" "+selectAddress.address}} </view>
+      <view class="user"> {{ selectAddress.receiver }} </view>
+      <view class="address"> {{ selectAddress.fullLocation + ' ' + selectAddress.address }} </view>
       <text class="icon icon-right"></text>
     </navigator>
     <navigator
@@ -81,16 +92,13 @@ onLoad(()=>{
         class="item"
         hover-class="none"
       >
-        <image
-          class="picture"
-          :src="item.picture"
-        />
+        <image class="picture" :src="item.picture" />
         <view class="meta">
-          <view class="name ellipsis">{{item.name}}</view>
-          <view class="attrs">{{item.attrsText}}</view>
+          <view class="name ellipsis">{{ item.name }}</view>
+          <view class="attrs">{{ item.attrsText }}</view>
           <view class="prices">
-            <view class="pay-price symbol">{{item.payPrice}}</view>
-            <view class="price symbol">{{item.price}}</view>
+            <view class="pay-price symbol">{{ item.payPrice }}</view>
+            <view class="price symbol">{{ item.price }}</view>
           </view>
           <view class="count">x{{ item.count }}</view>
         </view>
@@ -120,11 +128,11 @@ onLoad(()=>{
     <view class="settlement">
       <view class="item">
         <text class="text">商品总价: </text>
-        <text class="number symbol">{{orederPre?.summary.totalPrice.toFixed(2)}}</text>
+        <text class="number symbol">{{ orederPre?.summary.totalPrice.toFixed(2) }}</text>
       </view>
       <view class="item">
         <text class="text">运费: </text>
-        <text class="number symbol">{{orederPre?.summary.postFee.toFixed(2)}}</text>
+        <text class="number symbol">{{ orederPre?.summary.postFee.toFixed(2) }}</text>
       </view>
     </view>
   </scroll-view>
@@ -132,7 +140,7 @@ onLoad(()=>{
   <!-- 吸底工具栏 -->
   <view class="toolbar" :style="{ paddingBottom: safeAreaInsets?.bottom + 'px' }">
     <view class="total-pay symbol">
-      <text class="number">{{orederPre?.summary.totalPayPrice.toFixed(2)}}</text>
+      <text class="number">{{ orederPre?.summary.totalPayPrice.toFixed(2) }}</text>
     </view>
     <view class="button" :class="{ disabled: true }"> 提交订单 </view>
   </view>

@@ -2,12 +2,15 @@
 import { getGoodsByIdAPI } from '@/services/goods'
 import type { GoodsResult } from '@/types/goods'
 import type { SkuPopupEvent, SkuPopupInstanceType, SkuPopupLocaldata } from '@/components/vk-data-goods-sku-popup/vk-data-goods-sku-popup'
-import { onLoad } from '@dcloudio/uni-app'
+import { onLoad, onShow } from '@dcloudio/uni-app'
 import { ref } from 'vue'
 import ServicePanel from './components/ServicePanel.vue'
 import AddressPanel from './components/AddressPanel.vue'
 import { computed } from 'vue'
 import { postMemberCartAPI } from '@/services/cart'
+import type { AddressItem } from '@/types/address'
+import { addressListApi } from '@/services/address'
+import { useAddressStore } from '@/stores/modules/address'
 
 // #region
 /* data */
@@ -49,6 +52,10 @@ const skuPopupRef = ref<SkuPopupInstanceType>()
 const selectArrText = computed(()=>{
   return skuPopupRef.value?.selectArr?.join(' ').trim() || '请选择商品规格'
 })
+//收货地址
+const addressList = ref<AddressItem[]>([])
+//获取收货地址store
+const addressStore = useAddressStore()
 //#endregion
 
 //#region
@@ -114,8 +121,30 @@ const onAddCart = async (ev:SkuPopupEvent)=>{
   isShowSku.value = false
 }
 
+//立即购买
+const onBuyNow = async (ev:SkuPopupEvent)=>{
+  //跳转到订单界面
+  uni.navigateTo({url:`/pagesOrder/create/create?skuId=${ev._id}&count=${ev.buy_num}&addressId=${selectAddress.value?.id}`})
+}
+
+//获取收货地址列表
+const getAddressListData = async () => {
+  const res = await addressListApi()
+  addressList.value = res.result
+  // console.log(res.result)
+}
+
+//收货地址
+const selectAddress = computed(() => {
+  //store里面用户设置为啥或者选择啥时优先考虑,没有设置就以默认的来渲染
+  return addressStore.selectedAddress || addressList.value.find(v=>v.isDefault)
+})
+
 onLoad(() => {
   getGoodsByIdData()
+})
+onShow(()=>{
+  getAddressListData()
 })
 
 //#endregion
@@ -136,6 +165,7 @@ onLoad(() => {
       backgroundColor:'#E9F8F5'
     }"
     @add-cart="onAddCart"
+    @buy-now="onBuyNow"
   ></vk-data-goods-sku-popup>
   <scroll-view scroll-y class="viewport">
     <!-- 基本信息 -->
@@ -172,7 +202,8 @@ onLoad(() => {
         </view>
         <view class="item arrow" @tap="openPopup('address')">
           <text class="label">送至</text>
-          <text class="text ellipsis"> 请选择收获地址 </text>
+          <text v-if="selectAddress" class="text ellipsis"> {{selectAddress.fullLocation+" "+selectAddress.address}} </text>
+          <text v-else class="text ellipsis"> 请选择收获地址 </text>
         </view>
         <view class="item arrow" @tap="openPopup('service')">
           <text class="label">服务</text>
@@ -247,7 +278,7 @@ onLoad(() => {
     <!-- uni-ui的弹出层使用 -->
     <uni-popup ref="popup" type="bottom" background-color="#fff">
       <ServicePanel v-if="popupName === 'service'" @close="popup?.close()" />
-      <AddressPanel v-if="popupName === 'address'" @close="popup?.close()" />
+      <AddressPanel v-if="popupName === 'address'" @close="popup?.close()" :list="addressList" />
     </uni-popup>
   </view>
 </template>
