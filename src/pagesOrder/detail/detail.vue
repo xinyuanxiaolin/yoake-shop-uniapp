@@ -6,7 +6,7 @@ import type { OrderResult } from '@/types/order'
 import { onLoad, onReady } from '@dcloudio/uni-app'
 import { ref } from 'vue'
 import PageSkeleton from './components/PageSkeleton.vue'
-import { getMemberOrderConsignmentByIdAPI, getPayMockApi, getPayWxPayMiniPayApi } from '@/services/pay'
+import { getMemberOrderConsignmentByIdAPI, getPayMockApi, getPayWxPayMiniPayApi, putMemberOrderReceiptByIdAPI } from '@/services/pay'
 
 //是否为开发环境
 const isDev = import.meta.env.DEV
@@ -107,6 +107,19 @@ const onOrderSend = async ()=>{
     order.value!.orderState=OrderState.DaiShouHuo
   }
 }
+//确认收货
+const onOrderReceipt =()=>{
+  uni.showModal({
+    content:'为保证您的权益,请收到货并确认无误后,再确认收货',
+    success:async (success)=>{
+      if(success.confirm){
+       const res  = await putMemberOrderReceiptByIdAPI(query.id)
+       //更新订单状态
+       order.value = res.result
+      }
+    },
+  })
+}
 //页面加载
 onLoad(() => {
   getMemberOrderByIdData()
@@ -162,6 +175,9 @@ onLoad(() => {
             </navigator>
             <!-- 待发货状态：模拟发货,开发期间使用,用于修改订单状态为已发货 -->
             <view v-if="isDev && order.orderState == OrderState.DaiFaHuo" class="button" @tap="onOrderSend"> 模拟发货 </view>
+            <!-- 待收货状态 -->
+            <view v-if=" order.orderState == OrderState.DaiShouHuo" class="button" @tap="onOrderReceipt"> 确认收货 </view>
+
           </view>
         </template>
       </view>
