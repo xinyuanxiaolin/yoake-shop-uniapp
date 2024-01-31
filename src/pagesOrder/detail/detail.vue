@@ -1,11 +1,12 @@
 <script setup lang="ts">
 import { useGuessList } from '@/composables'
-import { OrderState, orderStateList } from '@/services/constants';
-import { getMemberOrderByIdApi } from '@/services/order';
-import type { OrderResult } from '@/types/order';
+import { OrderState, orderStateList } from '@/services/constants'
+import { getMemberOrderByIdApi } from '@/services/order'
+import type { OrderResult } from '@/types/order'
 import { onLoad, onReady } from '@dcloudio/uni-app'
 import { ref } from 'vue'
 import PageSkeleton from './components/PageSkeleton.vue'
+import { getPayMockApi, getPayWxPayMiniPayApi } from '@/services/pay'
 
 // 获取屏幕边界到安全区域距离
 const { safeAreaInsets } = uni.getSystemInfoSync()
@@ -70,19 +71,34 @@ onReady(() => {
 })
 
 //获取订单详情
-const order =ref<OrderResult>()
-const getMemberOrderByIdData = async ()=>{
+const order = ref<OrderResult>()
+const getMemberOrderByIdData = async () => {
   const res = await getMemberOrderByIdApi(query.id)
   order.value = res.result
 }
 
 //倒计时结束事件
-const onTimeup =()=>{
+const onTimeup = () => {
   //修改订单状态为已取消
-  order.value!.orderState= OrderState.YiQuXiao
+  order.value!.orderState = OrderState.YiQuXiao
+}
+//订单支付
+const onOrderPay = async () => {
+  if (import.meta.env.DEV) {
+    //开发环境使用模拟支付
+    await getPayMockApi({ orderId: query.id })
+  } else {
+    //微信支付-需企业认证
+    //根据订单号获取微信支付所需参数
+    const res = await getPayWxPayMiniPayApi({ orderId: query.id })
+    //发起微信支付
+    wx.requestPayment(res.result)
+  }
+  //关闭当前页面,在跳转支付结果页
+  uni.redirectTo({ url: `/pagesOrder/payment/payment?id=${query.id}` })
 }
 //页面加载
-onLoad(()=>{
+onLoad(() => {
   getMemberOrderByIdData()
 })
 </script>
@@ -106,7 +122,7 @@ onLoad(()=>{
       <!-- 订单状态 -->
       <view class="overview" :style="{ paddingTop: safeAreaInsets!.top + 20 + 'px' }">
         <!-- 待付款状态:展示去支付按钮和倒计时 -->
-        <template v-if="order.orderState===OrderState.DaiFuKuan">
+        <template v-if="order.orderState === OrderState.DaiFuKuan">
           <view class="status icon-clock">等待付款</view>
           <view class="tips">
             <text class="money">应付金额: ¥ 99.00</text>
@@ -120,12 +136,12 @@ onLoad(()=>{
               @timeup="onTimeup"
             />
           </view>
-          <view class="button">去支付</view>
+          <view class="button" @tap="onOrderPay">去支付</view>
         </template>
         <!-- 其他订单状态:展示再次购买按钮 -->
         <template v-else>
           <!-- 订单状态文字 -->
-          <view class="status"> {{orderStateList[order.orderState].text}} </view>
+          <view class="status"> {{ orderStateList[order.orderState].text }} </view>
           <view class="button-group">
             <navigator
               class="button"
@@ -223,7 +239,7 @@ onLoad(()=>{
       <view class="toolbar" :style="{ paddingBottom: safeAreaInsets?.bottom + 'px' }">
         <!-- 待付款状态:展示支付按钮 -->
         <template v-if="true">
-          <view class="button primary"> 去支付 </view>
+          <view class="button primary" @tap="onOrderPay"> 去支付 </view>
           <view class="button" @tap="popup?.open?.()"> 取消订单 </view>
         </template>
         <!-- 其他订单状态:按需展示按钮 -->
