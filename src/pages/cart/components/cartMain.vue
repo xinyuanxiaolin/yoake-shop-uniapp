@@ -81,11 +81,7 @@ const gotoPayment  =()=>{
     })
   }
   //跳转到结算页
-  uni.showToast({
-    title: '等待完成',
-    icon: 'none',
-    mask: true
-  })
+  uni.navigateTo({ url: '/pagesOrder/create/create' })
 }
 //初始化调用
 onShow(() => {
