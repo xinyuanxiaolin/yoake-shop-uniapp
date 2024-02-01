@@ -12,7 +12,11 @@ const orderTabs = ref([
   { orderState: 4, title: '待评价' },
 ])
 //高亮下标
-const activeIndex = ref(0)
+const activeIndex = ref(orderTabs.value.findIndex(v=>v.orderState===Number(query.type)))
+//获取我的页面跳转传参
+const query =defineProps<{
+  type:string
+}>()
 </script>
 
 <template>
