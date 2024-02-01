@@ -1,6 +1,6 @@
 /* 订单相关接口 */
 
-import type { OrderCreateParams, OrderLogisticResult, OrderPreResult, OrderResult } from "@/types/order"
+import type { OrderCreateParams, OrderListParams, OrderListResult, OrderLogisticResult, OrderPreResult, OrderResult } from "@/types/order"
 import { http } from "@/utils/http"
 
 /**
@@ -91,6 +91,18 @@ export const getMemberOrderCancelByIdAPI = (id: string, data: { cancelReason: st
     return http<OrderResult>({
       method: 'PUT',
       url: `/member/order/${id}/cancel`,
+      data,
+    })
+  }
+
+/**
+ * 获取订单列表
+ * @param data orderState 订单状态
+ */
+export const getMemberOrderAPI = (data: OrderListParams) => {
+    return http<OrderListResult>({
+      method: 'GET',
+      url: `/member/order`,
       data,
     })
   }
