@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { useGuessList } from '@/composables'
 import { OrderState, orderStateList } from '@/services/constants'
-import { deleteMemberOrderAPI, getMemberOrderByIdApi, getMemberOrderLogisticsByIdAPI } from '@/services/order'
+import { deleteMemberOrderAPI, getMemberOrderByIdApi, getMemberOrderCancelByIdAPI, getMemberOrderLogisticsByIdAPI } from '@/services/order'
 import type { LogisticItem, OrderResult } from '@/types/order'
 import { onLoad, onReady } from '@dcloudio/uni-app'
 import { ref } from 'vue'
@@ -143,6 +143,17 @@ const onOrderDelete = ()=>{
       }
     },
   })
+}
+
+//取消订单
+const  onOrderCancel = async ()=>{
+  //请求获取取消订单接口
+  await getMemberOrderCancelByIdAPI(query.id,{cancelReason:reason.value})
+  // 关闭弹窗
+  popup.value?.close?.()
+  //重新获取数据
+  getMemberOrderByIdData()
+  
 }
 //页面加载
 onLoad(() => {
@@ -328,7 +339,7 @@ onLoad(() => {
       </view>
       <view class="footer">
         <view class="button" @tap="popup?.close?.()">取消</view>
-        <view class="button primary">确认</view>
+        <view class="button primary" @tap="onOrderCancel">确认</view>
       </view>
     </view>
   </uni-popup>
