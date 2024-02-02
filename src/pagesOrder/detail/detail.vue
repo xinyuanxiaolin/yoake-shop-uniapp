@@ -1,12 +1,22 @@
 <script setup lang="ts">
 import { useGuessList } from '@/composables'
 import { OrderState, orderStateList } from '@/services/constants'
-import { deleteMemberOrderAPI, getMemberOrderByIdApi, getMemberOrderCancelByIdAPI, getMemberOrderLogisticsByIdAPI } from '@/services/order'
+import {
+  deleteMemberOrderAPI,
+  getMemberOrderByIdApi,
+  getMemberOrderCancelByIdAPI,
+  getMemberOrderLogisticsByIdAPI,
+} from '@/services/order'
 import type { LogisticItem, OrderResult } from '@/types/order'
 import { onLoad, onReady } from '@dcloudio/uni-app'
 import { ref } from 'vue'
 import PageSkeleton from './components/PageSkeleton.vue'
-import { getMemberOrderConsignmentByIdAPI, getPayMockApi, getPayWxPayMiniPayApi, putMemberOrderReceiptByIdAPI } from '@/services/pay'
+import {
+  getMemberOrderConsignmentByIdAPI,
+  getPayMockApi,
+  getPayWxPayMiniPayApi,
+  putMemberOrderReceiptByIdAPI,
+} from '@/services/pay'
 
 //是否为开发环境
 const isDev = import.meta.env.DEV
@@ -77,7 +87,11 @@ const order = ref<OrderResult>()
 const getMemberOrderByIdData = async () => {
   const res = await getMemberOrderByIdApi(query.id)
   order.value = res.result
-  if([OrderState.DaiShouHuo,OrderState.DaiPingJia,OrderState.YiWanCheng].includes(order.value.orderState)){
+  if (
+    [OrderState.DaiShouHuo, OrderState.DaiPingJia, OrderState.YiWanCheng].includes(
+      order.value.orderState,
+    )
+  ) {
     getMemberOrderLogisticsByIdData()
   }
 }
@@ -93,67 +107,68 @@ const onOrderPay = async () => {
     //开发环境使用模拟支付
     await getPayMockApi({ orderId: query.id })
   } else {
+    // #ifdef MP-WEIXIN
     //微信支付-需企业认证
     //根据订单号获取微信支付所需参数
     const res = await getPayWxPayMiniPayApi({ orderId: query.id })
     //发起微信支付
     wx.requestPayment(res.result)
+    // #endif
   }
   //关闭当前页面,在跳转支付结果页
   uni.redirectTo({ url: `/pagesOrder/payment/payment?id=${query.id}` })
 }
 //前端模拟后台发货
-const onOrderSend = async ()=>{
-  if(isDev){
+const onOrderSend = async () => {
+  if (isDev) {
     await getMemberOrderConsignmentByIdAPI(query.id)
     //主动更新订单状态
-    order.value!.orderState=OrderState.DaiShouHuo
+    order.value!.orderState = OrderState.DaiShouHuo
   }
 }
 //确认收货
-const onOrderReceipt =()=>{
+const onOrderReceipt = () => {
   uni.showModal({
-    content:'为保证您的权益,请收到货并确认无误后,再确认收货',
-    success:async (success)=>{
-      if(success.confirm){
-       const res  = await putMemberOrderReceiptByIdAPI(query.id)
-       //更新订单状态
-       order.value = res.result
+    content: '为保证您的权益,请收到货并确认无误后,再确认收货',
+    success: async (success) => {
+      if (success.confirm) {
+        const res = await putMemberOrderReceiptByIdAPI(query.id)
+        //更新订单状态
+        order.value = res.result
       }
     },
   })
 }
 //获取物流信息
 const logisticList = ref<LogisticItem[]>([])
-const getMemberOrderLogisticsByIdData = async ()=>{
- const res = await getMemberOrderLogisticsByIdAPI(query.id)
- logisticList.value =res.result.list
+const getMemberOrderLogisticsByIdData = async () => {
+  const res = await getMemberOrderLogisticsByIdAPI(query.id)
+  logisticList.value = res.result.list
 }
 
 //删除订单
-const onOrderDelete = ()=>{
+const onOrderDelete = () => {
   uni.showModal({
-    content:'是否删除订单',
-    success:async (success)=>{
-      if(success.confirm){
-         await deleteMemberOrderAPI({ids:[query.id]})
-         setTimeout(() => {
-          uni.redirectTo({url:'/pagesOrder/list/list'})
-         }, 400);
+    content: '是否删除订单',
+    success: async (success) => {
+      if (success.confirm) {
+        await deleteMemberOrderAPI({ ids: [query.id] })
+        setTimeout(() => {
+          uni.redirectTo({ url: '/pagesOrder/list/list' })
+        }, 400)
       }
     },
   })
 }
 
 //取消订单
-const  onOrderCancel = async ()=>{
+const onOrderCancel = async () => {
   //请求获取取消订单接口
-  await getMemberOrderCancelByIdAPI(query.id,{cancelReason:reason.value})
+  await getMemberOrderCancelByIdAPI(query.id, { cancelReason: reason.value })
   // 关闭弹窗
   popup.value?.close?.()
   //重新获取数据
   getMemberOrderByIdData()
-  
 }
 //页面加载
 onLoad(() => {
@@ -183,7 +198,7 @@ onLoad(() => {
         <template v-if="order.orderState === OrderState.DaiFuKuan">
           <view class="status icon-clock">等待付款</view>
           <view class="tips">
-            <text class="money">应付金额: ¥ {{order.payMoney}}</text>
+            <text class="money">应付金额: ¥ {{ order.payMoney }}</text>
             <text class="time">支付剩余</text>
             <uni-countdown
               color="#fff"
@@ -209,10 +224,21 @@ onLoad(() => {
               再次购买
             </navigator>
             <!-- 待发货状态：模拟发货,开发期间使用,用于修改订单状态为已发货 -->
-            <view v-if="isDev && order.orderState == OrderState.DaiFaHuo" class="button" @tap="onOrderSend"> 模拟发货 </view>
+            <view
+              v-if="isDev && order.orderState == OrderState.DaiFaHuo"
+              class="button"
+              @tap="onOrderSend"
+            >
+              模拟发货
+            </view>
             <!-- 待收货状态 -->
-            <view v-if=" order.orderState == OrderState.DaiShouHuo" class="button" @tap="onOrderReceipt"> 确认收货 </view>
-
+            <view
+              v-if="order.orderState == OrderState.DaiShouHuo"
+              class="button"
+              @tap="onOrderReceipt"
+            >
+              确认收货
+            </view>
           </view>
         </template>
       </view>
@@ -221,14 +247,14 @@ onLoad(() => {
         <!-- 订单物流信息 -->
         <view v-for="item in logisticList" :key="item.id" class="item">
           <view class="message">
-            {{item.text}}
+            {{ item.text }}
           </view>
-          <view class="date">{{item.time}}</view>
+          <view class="date">{{ item.time }}</view>
         </view>
         <!-- 用户收货地址 -->
         <view class="locate">
-          <view class="user"> {{order.receiverContact}} {{order.receiverMobile}} </view>
-          <view class="address"> {{order.receiverAddress}} </view>
+          <view class="user"> {{ order.receiverContact }} {{ order.receiverMobile }} </view>
+          <view class="address"> {{ order.receiverAddress }} </view>
         </view>
       </view>
 
@@ -242,20 +268,17 @@ onLoad(() => {
             :url="`/pages/goods/goods?id=${item.spuId}`"
             hover-class="none"
           >
-            <image
-              class="cover"
-              :src="item.image"
-            ></image>
+            <image class="cover" :src="item.image"></image>
             <view class="meta">
-              <view class="name ellipsis">{{item.name}}</view>
-              <view class="type">{{item.attrsText}}</view>
+              <view class="name ellipsis">{{ item.name }}</view>
+              <view class="type">{{ item.attrsText }}</view>
               <view class="price">
                 <view class="actual">
                   <text class="symbol">¥</text>
                   <text>{{ item.curPrice }}</text>
                 </view>
               </view>
-              <view class="quantity">x{{item.curPrice}}</view>
+              <view class="quantity">x{{ item.curPrice }}</view>
             </view>
           </navigator>
           <!-- 待评价状态:展示按钮 -->
@@ -268,15 +291,15 @@ onLoad(() => {
         <view class="total">
           <view class="row">
             <view class="text">商品总价: </view>
-            <view class="symbol">{{order.totalMoney}}</view>
+            <view class="symbol">{{ order.totalMoney }}</view>
           </view>
           <view class="row">
             <view class="text">运费: </view>
-            <view class="symbol">{{order.postFee}}</view>
+            <view class="symbol">{{ order.postFee }}</view>
           </view>
           <view class="row">
             <view class="text">应付金额: </view>
-            <view class="symbol primary">{{order.payMoney}}</view>
+            <view class="symbol primary">{{ order.payMoney }}</view>
           </view>
         </view>
       </view>
@@ -288,7 +311,7 @@ onLoad(() => {
           <view class="item">
             订单编号: {{ query.id }} <text class="copy" @tap="onCopy(query.id)">复制</text>
           </view>
-          <view class="item">下单时间: {{order.createTime}}</view>
+          <view class="item">下单时间: {{ order.createTime }}</view>
         </view>
       </view>
 
@@ -299,7 +322,7 @@ onLoad(() => {
       <view class="toolbar-height" :style="{ paddingBottom: safeAreaInsets?.bottom + 'px' }"></view>
       <view class="toolbar" :style="{ paddingBottom: safeAreaInsets?.bottom + 'px' }">
         <!-- 待付款状态:展示支付按钮 -->
-        <template v-if="order.orderState=== OrderState.DaiFuKuan">
+        <template v-if="order.orderState === OrderState.DaiFuKuan">
           <view class="button primary" @tap="onOrderPay"> 去支付 </view>
           <view class="button" @tap="popup?.open?.()"> 取消订单 </view>
         </template>
@@ -313,11 +336,19 @@ onLoad(() => {
             再次购买
           </navigator>
           <!-- 待收货状态: 展示确认收货 -->
-          <view class="button primary" v-if="order.orderState === OrderState.DaiShouHuo"> 确认收货 </view>
+          <view class="button primary" v-if="order.orderState === OrderState.DaiShouHuo">
+            确认收货
+          </view>
           <!-- 待评价状态: 展示去评价 -->
           <view class="button" v-if="order.orderState === OrderState.DaiPingJia"> 去评价 </view>
           <!-- 待评价/已完成/已取消 状态: 展示删除订单 -->
-          <view class="button delete" v-if="order.orderState >= OrderState.DaiPingJia"  @tap="onOrderDelete"> 删除订单 </view>
+          <view
+            class="button delete"
+            v-if="order.orderState >= OrderState.DaiPingJia"
+            @tap="onOrderDelete"
+          >
+            删除订单
+          </view>
         </template>
       </view>
     </template>
