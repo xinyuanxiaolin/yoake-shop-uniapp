@@ -21,8 +21,9 @@ const getMemberProfileData = async () => {
 }
 //头像修改
 const onAvatarChange = () => {
-  //调用uni拍照/选择图片api
-  uni.chooseMedia({
+  // #ifdef MP-WEIXIN
+    //调用uni拍照/选择图片api(目前仅支持微信,抖音,飞书,京东 2024.2.2)
+    uni.chooseMedia({
     //文件个数
     count: 1,
     mediaType: ['image'],
@@ -59,6 +60,43 @@ const onAvatarChange = () => {
       })
     },
   })
+  // #endif
+// #ifdef H5 || APP-PLUS
+uni.chooseImage({
+  count:1,
+  success: ({ tempFilePaths }) => {
+    // console.log(tempFilePaths,tempFiles);
+          //文件上传
+          uni.uploadFile({
+        url: '/member/profile/avatar',
+        name: 'file',
+        filePath: tempFilePaths[0],
+        success: (res) => {
+          // console.log(res);
+          if (res.statusCode === 200) {
+            //头像更新
+            const avatar = JSON.parse(res.data).result.avatar
+            //store库头像信息更新
+            memberStore.profile!.avatar = avatar
+            // console.log(avatar)
+            memberProfile.value!.avatar = avatar
+            uni.showToast({
+              title: '更新成功',
+              icon: 'success',
+              mask: true,
+            })
+          } else {
+            uni.showToast({
+              title: '出错了',
+              icon: 'error',
+            })
+          }
+        },
+      })
+  },
+
+})
+// #endif
 }
 //修改性别
 const onGenderChange: UniHelper.RadioGroupOnChange = (ev) => {

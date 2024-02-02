@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import type { InputNumberBoxEvent } from '@/components/vk-data-input-number-box/vk-data-input-number-box'
+import { useGuessList } from '@/composables'
 import { deleteMemberCartApi, getMemberCartAPI, putMemberCartBySkuIdApi, putMemberCartSelectApi } from '@/services/cart'
 import { useMemberStore } from '@/stores'
 import type { CartItem } from '@/types/cart'
@@ -83,6 +84,9 @@ const gotoPayment  =()=>{
   //跳转到结算页
   uni.navigateTo({ url: '/pagesOrder/create/create' })
 }
+//滚动到底部加载猜你喜欢分页
+//猜你喜欢组合式函数调用(位于composables文件夹中)
+const {guessRef,onScrolltolower}=useGuessList()
 //初始化调用
 onShow(() => {
   if (memberStore.profile) {
@@ -92,7 +96,7 @@ onShow(() => {
 </script>
 
 <template>
-  <scroll-view scroll-y class="scroll-view">
+  <scroll-view scroll-y class="scroll-view" @scrolltolower="onScrolltolower">
     <!-- 已登录: 显示购物车 -->
     <template v-if="memberStore.profile">
       <!-- 购物车列表 -->

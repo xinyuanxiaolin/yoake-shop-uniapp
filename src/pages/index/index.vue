@@ -92,7 +92,10 @@ onLoad(async () => {
 </template>
 
 <style lang="scss">
-//
+//app端问题,app默认与class为app的元素为根元素,所以这里需要做适配
+/* #ifdef APP-PLUS */
+app,
+/* #endif */
 page {
   background-color: #f7f7f7;
   height: 100%;

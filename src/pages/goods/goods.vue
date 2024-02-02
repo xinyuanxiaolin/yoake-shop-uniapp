@@ -286,6 +286,12 @@ onShow(()=>{
 </template>
 
 <style lang="scss">
+// 多端适配处理
+/* #ifdef H5 || APP-PLUS */
+.toolbar .icons .navigator-wrap{
+  flex:1;
+}
+/* #endif */
 page {
   height: 100%;
   overflow: hidden;
