@@ -40,7 +40,7 @@ export type Gender = '女' | '男'
  * 个人信息 修改信息
  */
 //Pick 是一个内置的工具类型（Utility Type），用于从给定的类型中选取部分属性，然后生成一个新的类型。
-export type ProfileParams =Pick<ProfileDetail,'nickname'|'gender'|'birthday'|'profession'>&{
+export type ProfileParams =Pick<ProfileDetail,'nickname'|'gender'|'birthday'|'profession'|'fullLocation'>&{
   /** 省份编码 */
   provinceCode?: string
   /** 城市编码 */

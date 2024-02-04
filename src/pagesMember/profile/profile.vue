@@ -118,7 +118,7 @@ const onFullLocationChange:UniHelper.RegionPickerOnChange = (ev) =>{
 }
 //提交表单
 const onSubmit = async () => {
-  const {nickname,gender,birthday,profession} =memberProfile.value
+  const {nickname,gender,birthday,profession,fullLocation} =memberProfile.value
   const res = await putMemberProfileApi({
     nickname,
     gender,
@@ -126,7 +126,8 @@ const onSubmit = async () => {
     provinceCode:fullLocationCode[0],
     cityCode:fullLocationCode[1],
     countyCode:fullLocationCode[2],
-    profession
+    profession,
+    fullLocation
   })
   // console.log(res);
   //更新store中相关数据
