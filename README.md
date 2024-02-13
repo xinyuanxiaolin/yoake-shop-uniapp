@@ -82,6 +82,8 @@ npm run dev:h5
 │   ├── pages.json             # 配置页面路由等页面类信息
 │   ├── manifest.json          # 配置appid等打包信息
 │   └── uni.scss               # uni-app 内置的常用样式变量
+├── scripts
+    └──dns-prefetch.js         # 打包时DNS解析配置优化 目前只配置了h5端打包优化
 ├── .editorconfig              # editorconfig 配置
 ├── .eslintrc.cjs              # eslint 配置
 ├── .prettierrc.json           # prettier 配置
