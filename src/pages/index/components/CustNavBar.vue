@@ -4,7 +4,7 @@ const { safeAreaInsets } = uni.getSystemInfoSync()
 </script>
 
 <template>
-  <view class="navbar" :style="{paddingTop:safeAreaInsets?.top +'px'}"> 
+  <view class="navbar" :style="{ paddingTop: safeAreaInsets?.top + 'px' }">
     <!-- logo的文字 -->
     <view class="logo">
       <image class="logo-image" src="@/static/images/logo.png"></image>
@@ -12,8 +12,10 @@ const { safeAreaInsets } = uni.getSystemInfoSync()
     </view>
     <!-- 搜索条 -->
     <view class="search">
-      <text class="icon-search">搜素商品</text>
-      <text class="icon-scan"></text>
+      <navigator class="search-item" url="/pages/search/search">
+        <text class="icon-search">搜索商品</text>
+        <text class="icon-scan"></text>
+      </navigator>
     </view>
   </view>
 </template>
@@ -49,6 +51,9 @@ const { safeAreaInsets } = uni.getSystemInfoSync()
     }
   }
   .search {
+    color: #fff;
+  }
+  .search-item {
     display: flex;
     align-items: center;
     justify-content: space-between;

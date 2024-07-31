@@ -51,9 +51,9 @@ const onRegionChange: UniHelper.RegionPickerOnChange = (ev) => {
 }
 // #endif
 // #ifdef H5 || APP-PLUS
-const onCityChange:UniHelper.UniDataPickerOnChange = (ev)=>{
+const onCityChange: UniHelper.UniDataPickerOnChange = (ev) => {
   //省市区
-  const [provinceCode, cityCode, countyCode] =ev.detail.value.map(v=>v.value)
+  const [provinceCode, cityCode, countyCode] = ev.detail.value.map((v) => v.value)
   //合并数据
   Object.assign(form.value, { provinceCode, cityCode, countyCode })
 }
@@ -118,7 +118,7 @@ onLoad(() => {
         <text class="label">手机号码</text>
         <input class="input" placeholder="请填写收货人手机号码" v-model="form.contact" />
       </uni-forms-item>
-      <uni-forms-item name="countyCode" class="form-item">
+      <uni-forms-item name="fullLocation" class="form-item">
         <text class="label">所在地区</text>
         <!-- #ifdef MP-WEIXIN -->
         <picker
@@ -131,7 +131,7 @@ onLoad(() => {
           <view v-else class="placeholder">请选择省/市/区(县)</view>
         </picker>
         <!-- #endif -->
-        <!-- #ifdef H5 || APP-PLUS -->
+        <!-- #ifdef  APP-PLUS -->
         <uni-data-picker
           placeholder="请选择地址"
           popup-title="请选择城市"
@@ -145,6 +145,9 @@ onLoad(() => {
           @change="onCityChange"
           v-model="form.countyCode"
         />
+        <!-- #endif -->
+        <!-- #ifdef H5 -->
+        <input class="input" placeholder="请填写省/市/区(县)" v-model="form.fullLocation" />
         <!-- #endif -->
       </uni-forms-item>
       <uni-forms-item name="address" class="form-item">
@@ -168,9 +171,9 @@ onLoad(() => {
 
 <style lang="scss">
 /* #ifdef H5 || APP-PLUS */
-:deep(.selected-area){
- height: auto;
- flex: 0 1 auto;
+:deep(.selected-area) {
+  height: auto;
+  flex: 0 1 auto;
 }
 /* #endif */
 page {

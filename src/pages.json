@@ -62,6 +62,12 @@
 			"style": {
 				"navigationBarTitleText": "商品详情"
 			}
+		},
+		{
+			"path": "pages/search/search",
+			"style": {
+				"navigationBarTitleText": "搜索界面"
+			}
 		}
 	],
 	"globalStyle": {
@@ -132,6 +138,12 @@
 					"path": "address-form/address-form",
 					"style": {
 						"navigationBarTitleText": ""
+					}
+				},
+				{
+					"path": "password/password",
+					"style": {
+						"navigationBarTitleText": "修改密码"
 					}
 				}
 			]

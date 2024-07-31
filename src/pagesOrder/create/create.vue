@@ -25,18 +25,22 @@ const onChangeDelivery: UniHelper.SelectorPickerOnChange = (ev) => {
 }
 //获取直接购买时的页面参数信息
 const query = defineProps<{
-  skuId?: string
+  goodsId?: string
   count?: string
-  addressId?:string
+  addressId?: string
 }>()
 //订单信息
 const orederPre = ref<OrderPreResult>()
 //获取订单信息
 const getMemberOrderPreData = async () => {
   //先判断下是不是从直接购买跳转而来
-  if (query.count && query.skuId) {
+  if (query.count && query.goodsId) {
     //为直接购买,调用直接购买接口
-    const res = await getMemberOrderPreNowApi({ skuId: query.skuId, count: query.count,addressId:query.addressId })
+    const res = await getMemberOrderPreNowApi({
+      goodsId: query.goodsId,
+      count: query.count,
+      addressId: query.addressId,
+    })
     orederPre.value = res.result
   } else {
     //为购物车预付购买,调用预付订单接口
@@ -55,24 +59,21 @@ const selectAddress = computed(() => {
 })
 
 //提交订单
-const onOrderSumbit =async ()=>{
-  if(!selectAddress.value?.id){
-    return uni.showToast({icon:'none',title:'请选择收货地址'})
-
+const onOrderSumbit = async () => {
+  if (!selectAddress.value?.id) {
+    return uni.showToast({ icon: 'none', title: '请选择收货地址' })
   }
   const res = await postMemberOrderApi({
-    addressId:selectAddress.value?.id,
-    buyerMessage:buyerMessage.value,
-    deliveryTimeType:activeDelivery.value.type,
-    goods:orederPre.value!.goods.map(v=>({count:v.count,skuId:v.skuId})),
-    payChannel:2,
-    payType:1
-
+    addressId: selectAddress.value?.id,
+    buyerMessage: buyerMessage.value,
+    deliveryTimeType: activeDelivery.value.type,
+    goods: orederPre.value!.goods.map((v) => ({ count: v.count, goodsId: v.id })),
+    payChannel: 2,
+    payType: query.goodsId ? 1 : 2,
   })
   //关闭当前页面,传递订单Id
-  uni.redirectTo({url:`/pagesOrder/detail/detail?id=${res.result.id}`})
-  console.log(res);
-  
+  uni.redirectTo({ url: `/pagesOrder/detail/detail?id=${res.result.id}` })
+  console.log(res)
 }
 
 //页面加载
@@ -108,7 +109,7 @@ onLoad(() => {
     <view class="goods">
       <navigator
         v-for="item in orederPre?.goods"
-        :key="item.skuId"
+        :key="item.id"
         :url="`/pages/goods/goods?id=${item.id}`"
         class="item"
         hover-class="none"
@@ -118,7 +119,7 @@ onLoad(() => {
           <view class="name ellipsis">{{ item.name }}</view>
           <view class="attrs">{{ item.attrsText }}</view>
           <view class="prices">
-            <view class="pay-price symbol">{{ item.payPrice }}</view>
+            <view class="pay-price symbol">{{ item.nowPrice }}</view>
             <view class="price symbol">{{ item.price }}</view>
           </view>
           <view class="count">x{{ item.count }}</view>
@@ -163,7 +164,9 @@ onLoad(() => {
     <view class="total-pay symbol">
       <text class="number">{{ orederPre?.summary.totalPayPrice.toFixed(2) }}</text>
     </view>
-    <view class="button" @tap="onOrderSumbit" :class="{ disabled: !selectAddress?.id }"> 提交订单 </view>
+    <view class="button" @tap="onOrderSumbit" :class="{ disabled: !selectAddress?.id }">
+      提交订单
+    </view>
   </view>
 </template>
 
@@ -241,7 +244,7 @@ page {
     }
 
     .name {
-      height: 80rpx;
+      // height: 80rpx;
       font-size: 26rpx;
       color: #444;
     }

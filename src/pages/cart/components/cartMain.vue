@@ -1,7 +1,12 @@
 <script setup lang="ts">
 import type { InputNumberBoxEvent } from '@/components/vk-data-input-number-box/vk-data-input-number-box'
 import { useGuessList } from '@/composables'
-import { deleteMemberCartApi, getMemberCartAPI, putMemberCartBySkuIdApi, putMemberCartSelectApi } from '@/services/cart'
+import {
+  deleteMemberCartApi,
+  getMemberCartAPI,
+  putMemberCartBySkuIdApi,
+  putMemberCartSelectApi,
+} from '@/services/cart'
 import { useMemberStore } from '@/stores'
 import type { CartItem } from '@/types/cart'
 import { onShow } from '@dcloudio/uni-app'
@@ -18,13 +23,13 @@ const getMemberCartData = async () => {
   cartList.value = res.result
 }
 //删除单个对应的购物车数据
-const onDeleteCart = (skuId: string) => {
+const onDeleteCart = (id: string) => {
   //弹窗确认
   uni.showModal({
     content: '是否删除',
     success: async (success) => {
       if (success.confirm) {
-        await deleteMemberCartApi({ ids: [skuId] })
+        await deleteMemberCartApi({ ids: [id] })
         //重新获取列表
         getMemberCartData()
       }
@@ -34,51 +39,51 @@ const onDeleteCart = (skuId: string) => {
 //修改商品数量时
 const onChangeCount = async (ev: InputNumberBoxEvent) => {
   console.log(ev)
-  await putMemberCartBySkuIdApi(ev.index,{count:ev.value})
+  await putMemberCartBySkuIdApi(ev.index, { count: ev.value })
 }
 //修改选中状态-单品选中
-const onChangeSelect = (item:CartItem)=>{
+const onChangeSelect = (item: CartItem) => {
   //前端数据更新(利用了响应式)
   item.selected = !item.selected
   //后端数据更新
-  putMemberCartBySkuIdApi(item.skuId,{selected:item.selected})
+  putMemberCartBySkuIdApi(item.id, { selected: item.selected })
 }
 //全选值计算
-const isSelectAll = computed(()=>{
+const isSelectAll = computed(() => {
   //every() 方法测试一个数组内的所有元素是否都能通过指定函数的测试。它返回一个布尔值。
   //但是every空数组会返回true,所以再来一个长度校验
-  return cartList.value.length && cartList.value.every(v=>v.selected===true)
+  return cartList.value.length && cartList.value.every((v) => v.selected === true)
 })
 //当点击全选时
-const onChangeSelectAll =   ()=>{
+const onChangeSelectAll = () => {
   //前端全选状态取反
   const _isSelectAll = !isSelectAll.value
   //前端数据更新
-  cartList.value.forEach(item => {
-      item.selected = _isSelectAll
-  });
+  cartList.value.forEach((item) => {
+    item.selected = _isSelectAll
+  })
   //后端数据更新
-   putMemberCartSelectApi({selected:_isSelectAll})
+  putMemberCartSelectApi({ selected: _isSelectAll })
 }
 //计算选中的单品列表
-const selectedCartList = computed(()=>{
-  return cartList.value.filter(v=>v.selected)
+const selectedCartList = computed(() => {
+  return cartList.value.filter((v) => v.selected)
 })
 //计算选中的总件数
-const selectedCartListCount = computed(()=>{
+const selectedCartListCount = computed(() => {
   //reduce() 方法对数组中的每个元素按序执行一个提供的 reducer 函数，每一次运行 reducer 会将先前元素的计算结果作为参数传入，最后将其结果汇总为单个返回值。
-  return selectedCartList.value.reduce((sum,item)=>sum+item.count,0)
+  return selectedCartList.value.reduce((sum, item) => sum + item.count, 0)
 })
 //计算选中的总金额
-const selectedCartListMoney = computed(()=>{
-  return selectedCartList.value.reduce((sum,item)=>sum+item.count*item.nowPrice,0)
+const selectedCartListMoney = computed(() => {
+  return selectedCartList.value.reduce((sum, item) => sum + item.count * item.nowPrice, 0)
 })
 //去结算
-const gotoPayment  =()=>{
-  if(selectedCartListCount.value===0){
-   return uni.showToast({
-      icon:'none',
-      title:'请选择商品'
+const gotoPayment = () => {
+  if (selectedCartListCount.value === 0) {
+    return uni.showToast({
+      icon: 'none',
+      title: '请选择商品',
     })
   }
   //跳转到结算页
@@ -86,7 +91,7 @@ const gotoPayment  =()=>{
 }
 //滚动到底部加载猜你喜欢分页
 //猜你喜欢组合式函数调用(位于composables文件夹中)
-const {guessRef,onScrolltolower}=useGuessList()
+const { guessRef, onScrolltolower } = useGuessList()
 //初始化调用
 onShow(() => {
   if (memberStore.profile) {
@@ -109,11 +114,15 @@ onShow(() => {
         <!-- 滑动操作分区 -->
         <uni-swipe-action>
           <!-- 滑动操作项 -->
-          <uni-swipe-action-item v-for="item in cartList" :key="item.skuId" class="cart-swipe">
+          <uni-swipe-action-item v-for="item in cartList" :key="item.id" class="cart-swipe">
             <!-- 商品信息 -->
             <view class="goods">
               <!-- 选中状态 -->
-              <text @tap="onChangeSelect(item)" class="checkbox" :class="{ checked: item.selected }"></text>
+              <text
+                @tap="onChangeSelect(item)"
+                class="checkbox"
+                :class="{ checked: item.selected }"
+              ></text>
               <navigator
                 :url="`/pages/goods/goods?id=${item.id}`"
                 hover-class="none"
@@ -133,7 +142,7 @@ onShow(() => {
                   v-model="item.count"
                   :min="1"
                   :max="item.stock"
-                  :index="item.skuId"
+                  :index="item.id"
                   @change="onChangeCount"
                 />
               </view>
@@ -141,7 +150,7 @@ onShow(() => {
             <!-- 右侧删除按钮 -->
             <template #right>
               <view class="cart-swipe-right">
-                <button class="button delete-button" @tap="onDeleteCart(item.skuId)">删除</button>
+                <button class="button delete-button" @tap="onDeleteCart(item.id)">删除</button>
               </view>
             </template>
           </uni-swipe-action-item>
@@ -159,9 +168,15 @@ onShow(() => {
       <view class="toolbar">
         <text @tap="onChangeSelectAll" class="all" :class="{ checked: isSelectAll }">全选</text>
         <text class="text">合计:</text>
-        <text class="amount">{{selectedCartListMoney}}</text>
+        <text class="amount">{{ selectedCartListMoney }}</text>
         <view class="button-grounp">
-          <view @tap="gotoPayment" class="button payment-button" :class="{ disabled: selectedCartListCount===0 }"> 去结算({{ selectedCartListCount }}) </view>
+          <view
+            @tap="gotoPayment"
+            class="button payment-button"
+            :class="{ disabled: selectedCartListCount === 0 }"
+          >
+            去结算({{ selectedCartListCount }})
+          </view>
         </view>
       </view>
     </template>

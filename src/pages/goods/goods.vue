@@ -1,7 +1,11 @@
 <script setup lang="ts">
 import { getGoodsByIdAPI } from '@/services/goods'
 import type { GoodsResult } from '@/types/goods'
-import type { SkuPopupEvent, SkuPopupInstanceType, SkuPopupLocaldata } from '@/components/vk-data-goods-sku-popup/vk-data-goods-sku-popup'
+import type {
+  SkuPopupEvent,
+  SkuPopupInstanceType,
+  SkuPopupLocaldata,
+} from '@/components/vk-data-goods-sku-popup/vk-data-goods-sku-popup'
 import { onLoad, onShow } from '@dcloudio/uni-app'
 import { ref } from 'vue'
 import ServicePanel from './components/ServicePanel.vue'
@@ -49,7 +53,7 @@ const mode = ref<SkuMode>(SkuMode.Both)
 //Sku组件实例
 const skuPopupRef = ref<SkuPopupInstanceType>()
 //计算被选择的值
-const selectArrText = computed(()=>{
+const selectArrText = computed(() => {
   return skuPopupRef.value?.selectArr?.join(' ').trim() || '请选择商品规格'
 })
 //收货地址
@@ -66,28 +70,28 @@ const getGoodsByIdData = async () => {
   goods.value = res.result
   console.log('商品的数据', res.result)
   //获取SKU组件所需格式数据
-  localdata.value = {
-    _id: res.result.id,
-    name: res.result.name,
-    goods_thumb: res.result.mainPictures[0],
-    spec_list: res.result.specs.map((v) => {
-      return {
-        name: v.name,
-        list: v.values,
-      }
-    }),
-    sku_list: res.result.skus.map((v) => {
-      return {
-        _id: v.id,
-        goods_id: res.result.id,
-        goods_name: res.result.name,
-        image: v.picture,
-        price: v.price * 100,
-        stock: v.inventory,
-        sku_name_arr: v.specs.map((va) => va.valueName),
-      }
-    }),
-  }
+  // localdata.value = {
+  //   _id: res.result.id,
+  //   name: res.result.name,
+  //   goods_thumb: res.result.mainPictures[0],
+  //   spec_list: res.result.specs.map((v) => {
+  //     return {
+  //       name: v.name,
+  //       list: v.values,
+  //     }
+  //   }),
+  //   sku_list: res.result.skus.map((v) => {
+  //     return {
+  //       _id: v.id,
+  //       goods_id: res.result.id,
+  //       goods_name: res.result.name,
+  //       image: v.picture,
+  //       price: v.price * 100,
+  //       stock: v.inventory,
+  //       sku_name_arr: v.specs.map((va) => va.valueName),
+  //     }
+  //   }),
+  // }
 }
 //轮播图变化
 const onChange: UniHelper.SwiperOnChange = (ev) => {
@@ -108,24 +112,38 @@ const openPopup = (name: typeof popupName.value) => {
 }
 
 //打开SKU弹框修改按钮的模式
-const openSkuPopup = (v: SkuMode) => {
-  //显示SKU组件
-  isShowSku.value = true
-  //修改按钮为对应触发的样式
-  mode.value = v
-}
+// const openSkuPopup = (v: SkuMode) => {
+//   //显示SKU组件
+//   isShowSku.value = true
+//   //修改按钮为对应触发的样式
+//   mode.value = v
+// }
 //加入购物车
-const onAddCart = async (ev:SkuPopupEvent)=>{
-  await postMemberCartAPI({skuId:ev._id,count:ev.buy_num})
-  uni.showToast({icon:'none',title:'添加成功'})
-  isShowSku.value = false
-}
+// const onAddCart = async (ev:SkuPopupEvent)=>{
+//   await postMemberCartAPI({skuId:ev._id,count:ev.buy_num})
+//   uni.showToast({icon:'none',title:'添加成功'})
+//   isShowSku.value = false
+// }
 
-//立即购买
-const onBuyNow = async (ev:SkuPopupEvent)=>{
-  //跳转到订单界面
-  uni.navigateTo({url:`/pagesOrder/create/create?skuId=${ev._id}&count=${ev.buy_num}&addressId=${selectAddress.value?.id}`})
+//加入购物车,非sku模块
+const addCart = async () => {
+  console.log('触发加入购物车')
+  await postMemberCartAPI({ goodsId: goods.value!.id, count: 1 })
+  uni.showToast({ icon: 'none', title: '添加成功' })
 }
+//立即购买,非sku模块
+const buyNow = () => {
+  console.log('触发立即购买')
+  //跳转到订单界面
+  uni.navigateTo({
+    url: `/pagesOrder/create/create?goodsId=${goods.value?.id}&count=1&addressId=${selectAddress.value?.id}`,
+  })
+}
+//立即购买
+// const onBuyNow = async (ev:SkuPopupEvent)=>{
+//   //跳转到订单界面
+//   uni.navigateTo({url:`/pagesOrder/create/create?skuId=${ev._id}&count=${ev.buy_num}&addressId=${selectAddress.value?.id}`})
+// }
 
 //获取收货地址列表
 const getAddressListData = async () => {
@@ -137,13 +155,15 @@ const getAddressListData = async () => {
 //收货地址
 const selectAddress = computed(() => {
   //store里面用户设置为啥或者选择啥时优先考虑,没有设置就以默认的来渲染
-  return addressStore.selectedAddress || addressList.value.find(v=>v.isDefault)
+  return addressStore.selectedAddress || addressList.value.find((v) => v.isDefault)
 })
 
 onLoad(() => {
-  getGoodsByIdData()
+  // getGoodsByIdData()
 })
-onShow(()=>{
+onShow(() => {
+  getGoodsByIdData()
+
   getAddressListData()
 })
 
@@ -152,7 +172,7 @@ onShow(()=>{
 
 <template>
   <!-- SKU弹窗第三方组件 -->
-  <vk-data-goods-sku-popup
+  <!-- <vk-data-goods-sku-popup
     v-model="isShowSku"
     :localdata="localdata"
     :mode="mode"
@@ -166,7 +186,7 @@ onShow(()=>{
     }"
     @add-cart="onAddCart"
     @buy-now="onBuyNow"
-  ></vk-data-goods-sku-popup>
+  ></vk-data-goods-sku-popup> -->
   <scroll-view scroll-y class="viewport">
     <!-- 基本信息 -->
     <view class="goods">
@@ -196,13 +216,15 @@ onShow(()=>{
 
       <!-- 操作面板 -->
       <view class="action">
-        <view class="item arrow" @tap="openSkuPopup(SkuMode.Both)">
+        <!-- <view class="item arrow" @tap="openSkuPopup(SkuMode.Both)">
           <text class="label">选择</text>
           <text class="text ellipsis"> {{selectArrText}} </text>
-        </view>
+        </view> -->
         <view class="item arrow" @tap="openPopup('address')">
           <text class="label">送至</text>
-          <text v-if="selectAddress" class="text ellipsis"> {{selectAddress.fullLocation+" "+selectAddress.address}} </text>
+          <text v-if="selectAddress" class="text ellipsis">
+            {{ selectAddress.fullLocation + ' ' + selectAddress.address }}
+          </text>
           <text v-else class="text ellipsis"> 请选择收获地址 </text>
         </view>
         <view class="item arrow" @tap="openPopup('service')">
@@ -236,7 +258,7 @@ onShow(()=>{
     </view>
 
     <!-- 同类推荐 -->
-    <view class="similar panel">
+    <!-- <view class="similar panel">
       <view class="title">
         <text>同类推荐</text>
       </view>
@@ -256,7 +278,7 @@ onShow(()=>{
           </view>
         </navigator>
       </view>
-    </view>
+    </view> -->
   </scroll-view>
 
   <!-- 用户操作 -->
@@ -273,8 +295,8 @@ onShow(()=>{
       </navigator>
     </view>
     <view class="buttons">
-      <view class="addcart" @tap="openSkuPopup(SkuMode.Cart)"> 加入购物车 </view>
-      <view class="buynow" @tap="openSkuPopup(SkuMode.Buy)"> 立即购买 </view>
+      <view class="addcart" @tap="addCart"> 加入购物车 </view>
+      <view class="buynow" @tap="buyNow"> 立即购买 </view>
     </view>
 
     <!-- uni-ui的弹出层使用 -->
@@ -288,8 +310,8 @@ onShow(()=>{
 <style lang="scss">
 // 多端适配处理
 /* #ifdef H5 || APP-PLUS */
-.toolbar .icons .navigator-wrap{
-  flex:1;
+.toolbar .icons .navigator-wrap {
+  flex: 1;
 }
 /* #endif */
 page {

@@ -88,20 +88,19 @@ onMounted(() => {
           @tap="onOrderDelete(item.id)"
         ></text>
       </view>
-      <!-- 商品信息，点击商品跳转到订单详情，不是商品详情 -->
+      <!-- 商品信息，点击商品跳转到订单详情, -->
       <navigator
-        v-for="sku in item.skus"
-        :key="sku.id"
+        v-for="good in item.goods"
+        :key="good.id"
         class="goods"
         :url="`/pagesOrder/detail/detail?id=${item.id}`"
         hover-class="none"
       >
         <view class="cover">
-          <image mode="aspectFit" :src="sku.image"></image>
+          <image mode="aspectFit" :src="good.picture"></image>
         </view>
         <view class="meta">
-          <view class="name ellipsis">{{ sku.name }}</view>
-          <view class="type">{{ sku.attrsText }}</view>
+          <view class="name ellipsis">{{ good.name }}</view>
         </view>
       </navigator>
       <!-- 支付信息 -->
@@ -213,7 +212,7 @@ onMounted(() => {
     }
 
     .name {
-      height: 80rpx;
+      // height: 80rpx;
       font-size: 26rpx;
       color: #444;
     }

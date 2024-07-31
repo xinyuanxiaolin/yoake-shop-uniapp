@@ -1,23 +1,22 @@
 <script setup lang="ts">
-import { useMemberStore } from '@/stores';
+import { useMemberStore } from '@/stores'
 
 const memberStore = useMemberStore()
 //退出登录
-const onLogout = ()=>{
+const onLogout = () => {
   //弹出模态弹窗
   uni.showModal({
     title: '是否退出登录?',
     content: '',
     showCancel: true,
     success: ({ confirm }) => {
-      if(confirm){
+      if (confirm) {
         //清理用户信息
-        memberStore.clearProfile()  
+        memberStore.clearProfile()
         // 返回上一页
         uni.navigateBack()
       }
-      
-    }
+    },
   })
 }
 </script>
@@ -30,21 +29,26 @@ const onLogout = ()=>{
         我的收货地址
       </navigator>
     </view>
+    <view class="list" v-if="memberStore.profile">
+      <navigator url="/pagesMember/password/password" hover-class="none" class="item arrow">
+        修改密码
+      </navigator>
+    </view>
     <!-- 列表2 -->
     <!-- #ifdef MP-WEIXIN -->
     <view class="list">
       <button hover-class="none" class="item arrow" open-type="openSetting">授权管理</button>
       <button hover-class="none" class="item arrow" open-type="feedback">问题反馈</button>
       <button hover-class="none" class="item arrow" open-type="contact">联系我们</button>
-    </view>   
+    </view>
     <!-- #endif -->
     <!-- 列表3 -->
     <view class="list">
-      <navigator hover-class="none" class="item arrow" url=" ">关于小兔鲜儿</navigator>
+      <navigator hover-class="none" class="item arrow" url=" ">关于我们</navigator>
     </view>
     <!-- 操作按钮 -->
     <view class="action">
-      <view @tap = "onLogout" class="button"  v-if="memberStore.profile">退出登录</view>
+      <view @tap="onLogout" class="button" v-if="memberStore.profile">退出登录</view>
     </view>
   </view>
 </template>

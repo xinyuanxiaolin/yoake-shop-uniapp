@@ -1,16 +1,16 @@
 <script setup lang="ts">
-import type { CategoryItem } from '@/types/home';
+import type { CategoryItem } from '@/types/home'
 
 //
 
 //props值获取
 defineProps<{
-    list:CategoryItem[]
+  list: CategoryItem[]
 }>()
 </script>
 
 <template>
-    <!-- 前台分类组件 -->
+  <!-- 前台分类组件 -->
   <view class="category">
     <navigator
       class="category-item"
@@ -19,11 +19,8 @@ defineProps<{
       v-for="item in list"
       :key="item.id"
     >
-      <image
-        class="icon"
-        :src="item.icon"
-      ></image>
-      <text class="text">{{item.name}}</text>
+      <image class="icon" :src="item.picture"></image>
+      <text class="text">{{ item.name }}</text>
     </navigator>
   </view>
 </template>

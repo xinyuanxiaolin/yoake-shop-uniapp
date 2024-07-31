@@ -1,7 +1,8 @@
 <script setup lang="ts">
-import { postLoginWxMinApi, postLoginWxMinSimpleApi } from '@/services/login'
+import { postLoginByAccountApi, postLoginWxMinApi, postLoginWxMinSimpleApi } from '@/services/login'
 import { useMemberStore } from '@/stores'
 import { onLoad } from '@dcloudio/uni-app'
+import { ref } from 'vue'
 let code = ''
 // #ifdef MP-WEIXIN
 //获取code登录凭证
@@ -24,7 +25,7 @@ const onGetPhoneNumber: UniHelper.ButtonOnGetphonenumber = async (ev) => {
 
 //模拟登录
 const onGetPhoneNumberSimple = async () => {
-  const res = await postLoginWxMinSimpleApi('13546875126')
+  const res = await postLoginWxMinSimpleApi('18039030078')
   //保存登录会员信息
   const memberStore = useMemberStore()
   memberStore.setProfile(res.result)
@@ -40,21 +41,47 @@ const onGetPhoneNumberSimple = async () => {
     uni.navigateBack()
   }, 500)
 }
+
+//H5端账号密码登录
+const form = ref({
+  account: '',
+  password: '',
+})
+const onGetAccount = async () => {
+  const res = await postLoginByAccountApi({
+    account: form.value.account,
+    password: form.value.password,
+  })
+  if (res.code != '0') {
+    const memberStore = useMemberStore()
+    memberStore.setProfile(res.result)
+    uni.showToast({
+      icon: 'none',
+      title: '登录成功',
+    })
+    setTimeout(() => {
+      uni.navigateBack()
+    }, 500)
+  } else {
+    uni.showToast({
+      icon: 'error',
+      title: '账号或者密码错误',
+    })
+  }
+}
 </script>
 
 <template>
   <view class="viewport">
     <view class="logo">
-      <image
-        src="https://pcapi-xiaotuxian-front-devtest.itheima.net/miniapp/images/logo_icon.png"
-      ></image>
+      <image src="@/static/images/logo_icon.png"></image>
     </view>
     <view class="login">
       <!-- 网页端表单登录 -->
       <!-- #ifdef H5 -->
-      <input class="input" type="text" placeholder="请输入用户名/手机号码" />
-      <input class="input" type="text" password placeholder="请输入密码" />
-      <button class="button phone">登录</button>
+      <input class="input" type="text" placeholder="请输入用户名/手机号码" v-model="form.account" />
+      <input class="input" type="text" password placeholder="请输入密码" v-model="form.password" />
+      <button class="button phone" @tap="onGetAccount">登录</button>
       <!-- #endif -->
       <!-- 小程序端授权登录 -->
       <!-- #ifdef MP-WEIXIN -->
@@ -74,7 +101,7 @@ const onGetPhoneNumberSimple = async () => {
           </button>
         </view>
       </view>
-      <view class="tips">登录/注册即视为你同意《服务条款》和《小兔鲜儿隐私协议》</view>
+      <view class="tips">登录/注册即视为你同意《服务条款》和《隐私协议》</view>
     </view>
   </view>
 </template>

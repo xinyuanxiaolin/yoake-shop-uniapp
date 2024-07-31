@@ -6,7 +6,7 @@ import { ref } from 'vue'
 import CustNavBar from './components/CustNavBar.vue'
 import CategoryPenel from './components/CategoryPanel.vue'
 import PageSkeleton from './components/PageSkeleton.vue'
-import HotPanel from './components/HotPanel.vue'
+// import HotPanel from './components/HotPanel.vue'
 import { useGuessList } from '@/composables'
 /* data */
 //轮播图数据
@@ -39,7 +39,7 @@ const getHomeHotData = async () => {
 }
 
 //猜你喜欢组合式函数调用(位于composables文件夹中)
-const {guessRef,onScrolltolower}=useGuessList()
+const { guessRef, onScrolltolower } = useGuessList()
 
 //自定义下拉刷新页面
 const onRefresherrefresh = async () => {
@@ -48,7 +48,7 @@ const onRefresherrefresh = async () => {
   //重置猜你喜欢数据
   guessRef.value?.resetData()
   //加载数据  异步处理,优化时间等待,等all全部处理完结束动画
-  await Promise.all([getHomeBannerData(), getHomeCategoryData(), getHomeHotData()])
+  await Promise.all([getHomeBannerData(), getHomeCategoryData()])
   //调用获取猜你喜欢数据
   guessRef.value?.getMore()
   //结束动画
@@ -59,7 +59,7 @@ const onRefresherrefresh = async () => {
 //页面加载
 onLoad(async () => {
   isLoading.value = true
-  await Promise.all([getHomeBannerData(), getHomeCategoryData(), getHomeHotData()])
+  await Promise.all([getHomeBannerData(), getHomeCategoryData()])
   isLoading.value = false
 })
 </script>
@@ -84,7 +84,7 @@ onLoad(async () => {
       <!-- 分类面板 -->
       <CategoryPenel :list="homeCategoryList" />
       <!-- 热门推荐 -->
-      <HotPanel :list="hotList" />
+      <!-- <HotPanel :list="hotList" /> -->
       <!-- 猜你喜欢 -->
       <CxGuess ref="guessRef" />
     </scroll-view>

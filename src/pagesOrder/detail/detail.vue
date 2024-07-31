@@ -47,6 +47,7 @@ const query = defineProps<{
   id: string
 }>()
 //获取页面栈
+// #ifdef MP-WEIXIN
 const pages = getCurrentPages()
 //获取当前页面实例,数组最后一项
 const pageInstance = pages.at(-1) as any
@@ -81,6 +82,7 @@ onReady(() => {
     endScrollOffset: 50,
   })
 })
+// #endif
 
 //获取订单详情
 const order = ref<OrderResult>()
@@ -92,7 +94,7 @@ const getMemberOrderByIdData = async () => {
       order.value.orderState,
     )
   ) {
-    getMemberOrderLogisticsByIdData()
+    // getMemberOrderLogisticsByIdData()
   }
 }
 
@@ -103,18 +105,20 @@ const onTimeup = () => {
 }
 //订单支付
 const onOrderPay = async () => {
-  if (import.meta.env.DEV) {
-    //开发环境使用模拟支付
-    await getPayMockApi({ orderId: query.id })
-  } else {
-    // #ifdef MP-WEIXIN
-    //微信支付-需企业认证
-    //根据订单号获取微信支付所需参数
-    const res = await getPayWxPayMiniPayApi({ orderId: query.id })
-    //发起微信支付
-    wx.requestPayment(res.result)
-    // #endif
-  }
+  // if (import.meta.env.DEV) {
+  //   //开发环境使用模拟支付
+  //   await getPayMockApi({ orderId: query.id })
+  // } else {
+  //   // #ifdef MP-WEIXIN
+  //   //微信支付-需企业认证
+  //   //根据订单号获取微信支付所需参数
+  //   const res = await getPayWxPayMiniPayApi({ orderId: query.id })
+  //   //发起微信支付
+  //   wx.requestPayment(res.result)
+  //   // #endif
+  // }
+
+  await getPayMockApi({ orderId: query.id })
   //关闭当前页面,在跳转支付结果页
   uni.redirectTo({ url: `/pagesOrder/payment/payment?id=${query.id}` })
 }
@@ -134,17 +138,18 @@ const onOrderReceipt = () => {
       if (success.confirm) {
         const res = await putMemberOrderReceiptByIdAPI(query.id)
         //更新订单状态
-        order.value = res.result
+        // order.value = res.result
+        order.value!.orderState = OrderState.DaiPingJia
       }
     },
   })
 }
 //获取物流信息
 const logisticList = ref<LogisticItem[]>([])
-const getMemberOrderLogisticsByIdData = async () => {
-  const res = await getMemberOrderLogisticsByIdAPI(query.id)
-  logisticList.value = res.result.list
-}
+// const getMemberOrderLogisticsByIdData = async () => {
+//   const res = await getMemberOrderLogisticsByIdAPI(query.id)
+//   logisticList.value = res.result.list
+// }
 
 //删除订单
 const onOrderDelete = () => {
@@ -180,6 +185,7 @@ onLoad(() => {
   <!-- 自定义导航栏: 默认透明不可见, scroll-view 滚动到 50 时展示 -->
   <view class="navbar" :style="{ paddingTop: safeAreaInsets?.top + 'px' }">
     <view class="wrap">
+      <!-- #ifdef MP-WEIXIN -->
       <navigator
         v-if="pages.length > 1"
         open-type="navigateBack"
@@ -187,6 +193,10 @@ onLoad(() => {
       ></navigator>
       <navigator v-else url="/pages/index/index" open-type="switchTab" class="back icon-home">
       </navigator>
+      <!-- #endif -->
+      <!-- #ifdef H5 || APP-PLUS -->
+      <navigator url="/pages/index/index" open-type="switchTab" class="back icon-left"> </navigator>
+      <!-- #endif -->
       <view class="title">订单详情</view>
     </view>
   </view>
@@ -199,15 +209,15 @@ onLoad(() => {
           <view class="status icon-clock">等待付款</view>
           <view class="tips">
             <text class="money">应付金额: ¥ {{ order.payMoney }}</text>
-            <text class="time">支付剩余</text>
-            <uni-countdown
+            <!-- <text class="time">支付剩余</text> -->
+            <!-- <uni-countdown
               color="#fff"
               :show-day="false"
               :show-colon="false"
               splitor-color="#fff"
               :second="order.countdown"
               @timeup="onTimeup"
-            />
+            /> -->
           </view>
           <view class="button" @tap="onOrderPay">去支付</view>
         </template>
@@ -245,12 +255,12 @@ onLoad(() => {
       <!-- 配送状态 -->
       <view class="shipment">
         <!-- 订单物流信息 -->
-        <view v-for="item in logisticList" :key="item.id" class="item">
+        <!-- <view v-for="item in logisticList" :key="item.id" class="item">
           <view class="message">
             {{ item.text }}
           </view>
           <view class="date">{{ item.time }}</view>
-        </view>
+        </view> -->
         <!-- 用户收货地址 -->
         <view class="locate">
           <view class="user"> {{ order.receiverContact }} {{ order.receiverMobile }} </view>
@@ -263,22 +273,21 @@ onLoad(() => {
         <view class="item">
           <navigator
             class="navigator"
-            v-for="item in order.skus"
+            v-for="item in order.goods"
             :key="item.id"
-            :url="`/pages/goods/goods?id=${item.spuId}`"
+            :url="`/pages/goods/goods?id=${item.id}`"
             hover-class="none"
           >
-            <image class="cover" :src="item.image"></image>
+            <image class="cover" :src="item.picture"></image>
             <view class="meta">
               <view class="name ellipsis">{{ item.name }}</view>
-              <view class="type">{{ item.attrsText }}</view>
               <view class="price">
                 <view class="actual">
                   <text class="symbol">¥</text>
-                  <text>{{ item.curPrice }}</text>
+                  <text>{{ item.price }}</text>
                 </view>
               </view>
-              <view class="quantity">x{{ item.curPrice }}</view>
+              <!-- <view class="quantity">x{{ item.price }}</view> -->
             </view>
           </navigator>
           <!-- 待评价状态:展示按钮 -->
@@ -336,7 +345,11 @@ onLoad(() => {
             再次购买
           </navigator>
           <!-- 待收货状态: 展示确认收货 -->
-          <view class="button primary" v-if="order.orderState === OrderState.DaiShouHuo">
+          <view
+            class="button primary"
+            v-if="order.orderState === OrderState.DaiShouHuo"
+            @tap="onOrderReceipt"
+          >
             确认收货
           </view>
           <!-- 待评价状态: 展示去评价 -->
@@ -555,7 +568,7 @@ page {
     }
 
     .name {
-      height: 80rpx;
+      // height: 80rpx;
       font-size: 26rpx;
       color: #444;
     }

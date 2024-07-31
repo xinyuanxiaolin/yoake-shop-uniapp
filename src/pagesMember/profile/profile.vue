@@ -12,7 +12,7 @@ const memberProfile = ref({} as ProfileDetail)
 //store库
 const memberStore = useMemberStore()
 //相关城市编码
-let fullLocationCode:[string,string,string] = ['','','']
+let fullLocationCode: [string, string, string] = ['', '', '']
 //获取个人信息
 const getMemberProfileData = async () => {
   const res = await getMemberProfileApi()
@@ -22,8 +22,8 @@ const getMemberProfileData = async () => {
 //头像修改
 const onAvatarChange = () => {
   // #ifdef MP-WEIXIN
-    //调用uni拍照/选择图片api(目前仅支持微信,抖音,飞书,京东 2024.2.2)
-    uni.chooseMedia({
+  //调用uni拍照/选择图片api(目前仅支持微信,抖音,飞书,京东 2024.2.2)
+  uni.chooseMedia({
     //文件个数
     count: 1,
     mediaType: ['image'],
@@ -37,13 +37,13 @@ const onAvatarChange = () => {
         name: 'file',
         filePath: tempFilePath,
         success: (res) => {
-          // console.log(res);
+          console.log(res)
           if (res.statusCode === 200) {
             //头像更新
             const avatar = JSON.parse(res.data).result.avatar
             //store库头像信息更新
             memberStore.profile!.avatar = avatar
-            // console.log(avatar)
+            console.log(avatar)
             memberProfile.value!.avatar = avatar
             uni.showToast({
               title: '更新成功',
@@ -61,13 +61,13 @@ const onAvatarChange = () => {
     },
   })
   // #endif
-// #ifdef H5 || APP-PLUS
-uni.chooseImage({
-  count:1,
-  success: ({ tempFilePaths }) => {
-    // console.log(tempFilePaths,tempFiles);
-          //文件上传
-          uni.uploadFile({
+  // #ifdef H5 || APP-PLUS
+  uni.chooseImage({
+    count: 1,
+    success: ({ tempFilePaths }) => {
+      // console.log(tempFilePaths,tempFiles);
+      //文件上传
+      uni.uploadFile({
         url: '/member/profile/avatar',
         name: 'file',
         filePath: tempFilePaths[0],
@@ -93,10 +93,9 @@ uni.chooseImage({
           }
         },
       })
-  },
-
-})
-// #endif
+    },
+  })
+  // #endif
 }
 //修改性别
 const onGenderChange: UniHelper.RadioGroupOnChange = (ev) => {
@@ -109,25 +108,24 @@ const onBirthdayChange: UniHelper.DatePickerOnChange = (ev) => {
   memberProfile.value.birthday = ev.detail.value
 }
 //修改城市
-const onFullLocationChange:UniHelper.RegionPickerOnChange = (ev) =>{
+const onFullLocationChange: UniHelper.RegionPickerOnChange = (ev) => {
   //修改前端界面
-  memberProfile.value.fullLocation =ev.detail.value.join(' ')
+  memberProfile.value.fullLocation = ev.detail.value.join(' ')
   //提交给后端更新
-  fullLocationCode=ev.detail.code!
-  
+  fullLocationCode = ev.detail.code!
 }
 //提交表单
 const onSubmit = async () => {
-  const {nickname,gender,birthday,profession,fullLocation} =memberProfile.value
+  const { nickname, gender, birthday, profession, fullLocation } = memberProfile.value
   const res = await putMemberProfileApi({
     nickname,
     gender,
     birthday,
-    provinceCode:fullLocationCode[0],
-    cityCode:fullLocationCode[1],
-    countyCode:fullLocationCode[2],
+    provinceCode: fullLocationCode[0],
+    cityCode: fullLocationCode[1],
+    countyCode: fullLocationCode[2],
     profession,
-    fullLocation
+    fullLocation,
   })
   // console.log(res);
   //更新store中相关数据
@@ -206,7 +204,12 @@ onLoad(() => {
         </view>
         <view class="form-item">
           <text class="label">城市</text>
-          <picker class="picker" mode="region" :value="memberProfile?.fullLocation?.split(' ')" @change="onFullLocationChange">
+          <picker
+            class="picker"
+            mode="region"
+            :value="memberProfile?.fullLocation?.split(' ')"
+            @change="onFullLocationChange"
+          >
             <view v-if="memberProfile?.fullLocation">{{ memberProfile.fullLocation }}</view>
             <view class="placeholder" v-else>请选择城市</view>
           </picker>

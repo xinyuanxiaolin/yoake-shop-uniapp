@@ -4,8 +4,17 @@ import uni from '@dcloudio/vite-plugin-uni'
 // https://vitejs.dev/config/
 export default defineConfig({
   build: {
-    // 开发阶段启用源码映射：https://uniapp.dcloud.net.cn/tutorial/migration-to-vue3.html#需主动开启-sourcemap
     sourcemap: process.env.NODE_ENV === 'development',
+  },
+  server: {
+    proxy: {
+      '/api': {
+        //开发阶段服务器部署地址
+        target: 'http://localhost:9000',
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/api/, ''),
+      },
+    },
   },
   plugins: [uni()],
 })
